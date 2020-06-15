@@ -185,3 +185,83 @@ def optical_depth():
                 continue
     
     return ch_ir, ch_sw
+
+
+#Main Function
+def main():
+
+    #Calculation of the comulative optical depth (total OD) in the ir
+    #and sw region. Total OD is evaluated as the comulative sum of the OD vectors
+    
+    ch_ir, ch_sw = optical_depth()
+        
+    tot_ch_ir = np.zeros(nlayer)
+    tot_ch_sw = np.zeros(nlayer)
+    
+    tot_ch_ir[1:nlayer] = np.cumsum(ch_ir[0:nlayer-1])
+    tot_ch_sw[1:nlayer] = np.cumsum(ch_sw[0:nlayer-1])
+    
+    #Computation the the transmittance in the ir and sw regions
+    #The trasmittance is defined as T=e^(-OD)
+    
+    trans_ir = np.exp(-ch_ir)
+    trans_sw = np.exp(-ch_sw)
+    
+    #The trasmittance of the last layer, which is associated withe the 
+    #ground is set to 0, since the ground is considered a black body
+    
+    trans_ir[nlayer - 1] = 0
+    trans_sw[nlayer - 1] = 0
+    
+    #Computation of the absorbance and the emissivity of the layer 
+    #The emissivity is equal to the absorbance (Kirchhoff's law)
+    
+    abs_ir = 1 - trans_ir #absorbance
+    abs_sw = 1 - trans_sw 
+    
+    emis_ir = abs_ir
+    emis_sw = abs_sw
+    
+    #Computation of the trasmissivity symmetric matrix 
+    
+    trasm_m_ir = np.ones((nlayer,nlayer))
+              
+    for i in range(nlayer - 2):
+        for j in range(i + 2, nlayer):
+            trasm_m_ir[i][j] = trasm_m_ir[i][j-1]*trans_ir[j-1]
+            trasm_m_ir[j][i] = trasm_m_ir[i][j]
+            
+    #Computation of the total comulative trasmittance in the sw    
+    tot_trans_sw = np.exp(-tot_ch_sw)
+    
+    #Definition of the M matrix 
+    M= np.ones((nlayer,nlayer))
+    
+    for i in range(nlayer):
+        for j in range(nlayer):
+            M[i][j] = trasm_m_ir[i][j]*emis_ir[j]*abs_ir[i]
+
+    for i in range(nlayer - 1):
+        M[i][i] = -2*emis_ir[i]
+    
+    M[nlayer-1][nlayer-1] = -emis_ir[nlayer-1]
+    
+    #Computation of the solar irradiance (sw) absorbed by the atmosphere
+    irr_abs = np.zeros(nlayer)
+    
+    for i in range(nlayer):
+        irr_abs[i] = -TSI*tot_trans_sw[i]*abs_sw[i]
+    
+    #The system that needs to be solved is:
+    # irr_abs = M*(sigma*T^4) 
+    #with sigma*T^4 (sT4) vector containing the Stefan–Boltzmann law emission
+    sT4 = np.linalg.solve(M,irr_abs)
+    
+    #It is possible to found the vector describing the temperature profile T as
+    
+    T = (sT4/sigma)**0.25
+    
+    print(T)
+  
+if __name__ == '__main__':
+    main()
