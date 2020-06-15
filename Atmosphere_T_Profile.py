@@ -1,26 +1,25 @@
 #----------------------------------------
-#ATMOSPHERE_TEMPERATURE_PROFILE
+#ATMOSPHERE_TEMPERATURE_PROFILE FUNCTIONS
 #----------------------------------------
-
 import numpy as np
 
 
 #Definition of the variables
 
-nlayer = 23 #Number of total layer used for the plane-parallel approximation
+nlayer = 51 #Number of total layer used for the plane-parallel approximation
                 #The first layer is the surface
 z_top_a = 50 #Height of the atmosphere in kilometers
 scale_height_1 = 5 #Scale height of the first absorber gas
 scale_height_2 = 5 #Scale height of the second absorber gas
 wp_1 = 1 #Mixing ratio flag for gas one. 1 = constant, other = exponential
-wp_2 = 1 #Mixing ratio flag for gas two. 1 = constant, other = exponential
+wp_2 = 2 #Mixing ratio flag for gas two. 1 = constant, other = exponential
 ozone = 1 #Flag for the stratospheric ozone
 N_gas_1 = 1 #Normalisation factor for the gas one
 N_gas_2 = 1 #Normalisation factor for the gas two
 N_gas_ozone = 1 #Normalisation factor for the ozone
-k_1_a = 0.33 #absorption coefficient for the gas one (IR)
-k_2_a = 0 #absorption coefficient for the gas two (SW)
-k_ozone_a = 0 #absorption coefficient for the ozone (SW)
+k_1_a = 0.4 #absorption coefficient for the gas one (IR)
+k_2_a = 0.01 #absorption coefficient for the gas two (SW)
+k_ozone_a = 0.01 #absorption coefficient for the ozone (SW)
 clouds = 0 #flag to consider the presence of the clouds
 cloud_position = [8, 10] #bottom and top height in kilometer
 k_cloud_LW = 0 #Absorption coefficient for the clouds in the long-wave
@@ -31,24 +30,63 @@ k_cloud_SW = 0 #Absorption coefficient for the clouds in the short-wave
 albedo = 0.3                 #Planetary albedo
 TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
 mudif = 3/5                  # Clouds diffuse trasmittance
-sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant
-z_top_a = z_top_a*1000       # conversion Km to m of the atmosphere high
-scale_height_1 = scale_height_1*1000                   
-scale_height_2 = scale_height_2*1000      
+sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant     
 
 
-#Definition of the function that defines the mixing ratio profile w
+
 def mixing_ratio_profile(flag, nlayer, z, scale_height):
+    """ This function generates the mixing ratio profile w of the gas.
+        The mixing ratio is defined as the fraction of the gas over the
+        total mass.
+        
+        This function can generates two different profile:
+            1) constant mixing ratio
+            2) exponential mixing ratio
+    
+        INPUT:
+            flag         : profile type, if equal to 1 the function returns a 
+                           constant profile, if other it return a exponential 
+                           profile
+            nlayer       : number of ayer of the atmosphere
+            z            : height vector
+            scale_height : scale height H for the exp profile exp(-z/H)
+            
+        OUTPUT:
+            w : mixing ratio profile vector
+    
+                                                                       """
+    if nlayer < 1:
+        raise ValueError('The number of the layer must be at least 1')
+    
+    
     if flag == 1:
         w = np.zeros(nlayer)
         w = np.full_like(w, 1)         #constant mix.ratio (example: CO2)
     else:
         w = np.exp(-z/scale_height)   #exponential mix.ratio (example: H2O)
+        
     return w
 
-#definition of the ozone mixing ratio profile: if flag = 1, ozone will be 
-#considered in the atmosphere (The profile will be gaussian)
+
 def ozone_mixing_ratio(flag, z, nlayer):
+    """ This function generates the mixing ratio profile for the ozone.
+       
+        The mixing ration will be gaussian shaped, 
+        centered at 30 km of height.
+        
+        INPUT:
+            flag   : profile type, if equal to 1 the function return a 
+                     gaussian profile
+            z      : height vector
+            nlayer : number of ayer of the atmosphere
+            
+        OUTPUT:
+            w_ozone : mixing ratio profile vector       
+    
+                                                                      """
+    if nlayer < 1:
+        raise ValueError('The number of the layer must be at least 1')
+                                                                        
     if flag == 1:
         z_botton = 20000 #minimum level of stratospheric ozone
         z_top = 50000    #maximum level of stratospheric ozone
@@ -64,13 +102,70 @@ def ozone_mixing_ratio(flag, z, nlayer):
             
     return w_ozone
 
-#this function returns the optical depth (OD) vectors in the long wave (ir) 
-#and short wave (sw) regions.       
-def optical_depth():
+       
+def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
+                  scale_height_2 = 5, wp_1 = 1, wp_2 = 1, ozone = 0,
+                  N_gas_1 = 1, N_gas_2 = 1, N_gas_ozone = 1,
+                  k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0, clouds = 0,
+                  cloud_position = [8, 10], k_cloud_LW = 0,
+                  k_cloud_SW = 0):
+    """ This function returns the optical depth (OD) vectors in the
+        long wave (IR) and short wave (SW) regions.
+        
+        This function is able to compute the OD profile vectors in two
+        spectral regions and in the situation of clear or cloudy sky.
+    
+        (The default values are in parentheses)
+        
+        INPUNT:
+            nlayer         : number of ayer of the atmosphere (51).           
+            z_top_a        : Height of the atmosphere in kilometers (50).
+            scale_height_1 : (gas 1) scale height H for the exp profile exp(-z/H)
+                             for the gas assorbing in the long wave (5).
+            scale_height_2 : (gas 2) scale height H for the exp profile exp(-z/H)
+                             for the gas assorbing in the short wave gas 2 (5).
+            wp_1           : profile flag for the mixing ration of gas 1 (1).
+            wp_2           : profile flag for the mixing ration of gas 2 (1).
+            ozone          : profile flag for the mixing ration of ozone (0).
+            N_gas_1        : Normalisation factor for the gas 1 (1).
+            N_gas_2        : Normalisation factor for the gas 2 (1).
+            N_gas_ozone    : Normalisation factor for the ozone (1).
+            k_1_a          : Absorption coefficient for the gas 1 (IR) (0.4).
+            k_2_a          : Absorption coefficient for the gas 2 (SW) (0).
+            k_ozone_a      : Absorption coefficient for the ozone (SW) (0).
+            clouds         : Flag to consider the presence of the clouds (0).
+            cloud_position : Bottom and top height in kilometer ([8, 10]).
+            k_cloud_LW     : Absorption coefficient for the clouds in the IR.
+            k_cloud_SW     : Absorption coefficient for the clouds in the SW.
+            
+        OUTPUT:
+            ch_ir : Total optical vector depth in the IR region.
+            ch_sw : Total optical vector depth in the SW region.
+        
+        RAISE:
+            ValueError:
+                If the one of the input is negative
+                If nlayer < 1
+            
+                                                                          """
+    
+    if nlayer < 1:
+        raise ValueError('The number of the layer must be at least 1')
+    
+    if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
+        raise ValueError("z_top_a, scale_height_1 and scale_height_2 must to be > 0")
+    
+    if (N_gas_1 <0 or N_gas_2 <0 or N_gas_ozone <0 or k_1_a <0 or k_2_a <0 or
+         k_ozone_a <0 or k_cloud_LW <0 or k_cloud_SW <0):
+        raise ValueError("All the input must to be positive!")
     
     #Definition of the absorption coefficient vectors
     #This vectors contains the value of the absorption coefficient, since the
-    #physical properties don't chanmge with height the vectors are constant
+    #physical properties don't change with height the vectors are constant
+    
+    z_top_a = z_top_a*1000       # conversion Km to m of the atmosphere high
+    scale_height_1 = scale_height_1*1000                   
+    scale_height_2 = scale_height_2*1000 
     
     k1 = np.zeros(nlayer)
     k2 = np.zeros(nlayer)
@@ -187,7 +282,6 @@ def optical_depth():
     return ch_ir, ch_sw
 
 
-#Main Function
 def main():
 
     #Calculation of the comulative optical depth (total OD) in the ir
