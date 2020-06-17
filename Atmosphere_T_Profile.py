@@ -57,7 +57,11 @@ def mixing_ratio_profile(flag, nlayer, z, scale_height):
                                                                        """
     if nlayer < 1:
         raise ValueError('The number of the layer must be at least 1')
+        
+    if len(z) != nlayer:
+        raise ValueError('The length of z must to be equal to nlayer!')
     
+    nlayer = int(nlayer)
     
     if flag == 1:
         w = np.zeros(nlayer)
@@ -72,7 +76,7 @@ def ozone_mixing_ratio(flag, z, nlayer):
     """ This function generates the mixing ratio profile for the ozone.
        
         The mixing ration will be gaussian shaped, 
-        centered at 30 km of height.
+        centered at 35 km of height.
         
         INPUT:
             flag   : profile type, if equal to 1 the function return a 
@@ -86,7 +90,12 @@ def ozone_mixing_ratio(flag, z, nlayer):
                                                                       """
     if nlayer < 1:
         raise ValueError('The number of the layer must be at least 1')
-                                                                        
+    
+    if len(z) != nlayer:
+        raise ValueError('The length of z must to be equal to nlayer!')
+    
+    nlayer = int(nlayer)
+                                                                    
     if flag == 1:
         z_botton = 20000 #minimum level of stratospheric ozone
         z_top = 50000    #maximum level of stratospheric ozone
@@ -118,7 +127,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         (The default values are in parentheses)
         
         INPUNT:
-            nlayer         : number of ayer of the atmosphere (51).           
+            nlayer         : number of layer of the atmosphere (51).           
             z_top_a        : Height of the atmosphere in kilometers (50).
             scale_height_1 : (gas 1) scale height H for the exp profile exp(-z/H)
                              for the gas assorbing in the long wave (5).
@@ -144,25 +153,35 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         
         RAISE:
             ValueError:
-                If the one of the input is negative
+                If the one of the input value is negative
                 If nlayer < 1
+                If the bottom of the cloud is higher than the top
             
                                                                           """
-    
-    if nlayer < 1:
-        raise ValueError('The number of the layer must be at least 1')
-    
-    if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
-        raise ValueError("z_top_a, scale_height_1 and scale_height_2 must to be > 0")
-    
-    if (N_gas_1 <0 or N_gas_2 <0 or N_gas_ozone <0 or k_1_a <0 or k_2_a <0 or
-         k_ozone_a <0 or k_cloud_LW <0 or k_cloud_SW <0):
-        raise ValueError("All the input must to be positive!")
-    
-    #Definition of the absorption coefficient vectors
+    try:
+        if nlayer < 1:
+            raise ValueError('The number of the layer must be at least 1')
+        
+        if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
+            raise ValueError("z_top_a, scale_height_1 and scale_height_2 must to be > 0")
+        
+        if (N_gas_1 <0 or N_gas_2 <0 or N_gas_ozone <0 or k_1_a <0 or k_2_a <0 or
+             k_ozone_a <0 or k_cloud_LW <0 or k_cloud_SW <0):
+            raise ValueError("All the input must to be positive!")
+            
+        if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
+            cloud_position[1] <0):
+            raise ValueError("Check clouds parameters!")
+            
+    except TypeError:
+        raise TypeError("The input must to be a number, not a string!")
+        
+    #nlayer must to be an intereg value
+    nlayer = int(nlayer)
+           
+    #Definition of the absorption coefficient vectors k1 and k2
     #This vectors contains the value of the absorption coefficient, since the
-    #physical properties don't change with height the vectors are constant
-    
+    #physical properties don't change with height the vectors are constant    
     z_top_a = z_top_a*1000       # conversion Km to m of the atmosphere high
     scale_height_1 = scale_height_1*1000                   
     scale_height_2 = scale_height_2*1000 
@@ -174,8 +193,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     k2 = np.full_like(k2,k_2_a)
     k_ozone = np.full_like(k_ozone,k_ozone_a)
     
-    #Definition of the geometry of the single layer.
-    
+    #Definition of the geometry of the single layer.    
     if nlayer==1:           #The last layer is the surface                
         z = np.array([0])
         dz = np.array([0])
@@ -193,8 +211,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             z[i] = z_top_a - dzs*i  
             zm[i] = z_top_a - dzs*(0.5 + i)
 
-    #Atmospheric Density Profile Calculation
-    
+    #Atmospheric Density Profile Calculation    
     do = 1.225                   #Air density at the grond [Kg/m^3]
     H = 101325/(9.8*do)          #Scale height fot the density profile
     d = do*np.exp(-z/H)          #Density profile vector
@@ -210,13 +227,12 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     w_ozone = ozone_mixing_ratio(ozone, z, nlayer)
 
     #Absorption gasses profile vector (Density_profile*Mixing_ratio_shape)
-    #This gives me the quantity of absorption gasses in that layer
+    #This gives the quantity of absorption gasses in that layer
     density_abs1 = d*w1
     density_abs2 = d*w2
     density_ozone = d*w_ozone
        
-    #Normalisation factors of the absorption gasses profile
-    
+    #Normalisation factors of the absorption gasses profile   
     tot_a1 = np.trapz(density_abs1, dx = dzs)
     tot_a2 = np.trapz(density_abs2, dx = dzs)
     tot_ozone = np.trapz(density_ozone, dx = dzs)
@@ -281,14 +297,27 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     
     return ch_ir, ch_sw
 
-
-def main():
-
-    #Calculation of the comulative optical depth (total OD) in the ir
-    #and sw region. Total OD is evaluated as the comulative sum of the OD vectors
-    
-    ch_ir, ch_sw = optical_depth()
         
+def temperature_profile(nlayer, ch_ir, ch_sw):
+    """This function computes the atmospheric temperature vector in an
+       equilibrium situation.
+       
+       INPUT:
+           nlayer : number of ayer of the atmosphere.
+           ch_ir  : Total optical vector depth in the IR region.
+           ch_sw  : Total optical vector depth in the SW region.
+           
+       OUTPUT:
+           T : Atmospheric temperature vector, gives the temperature at each
+               level of the atmosphere.
+
+                                                                        """
+    
+    if nlayer < 1:
+        raise ValueError('The number of the layer must be at least 1')
+        
+    #Calculation of the comulative optical depth (total OD) in the ir
+    #and sw region. Total OD is evaluated as the comulative sum of the OD vectors        
     tot_ch_ir = np.zeros(nlayer)
     tot_ch_sw = np.zeros(nlayer)
     
@@ -296,28 +325,24 @@ def main():
     tot_ch_sw[1:nlayer] = np.cumsum(ch_sw[0:nlayer-1])
     
     #Computation the the transmittance in the ir and sw regions
-    #The trasmittance is defined as T=e^(-OD)
-    
+    #The trasmittance is defined as T=e^(-OD)    
     trans_ir = np.exp(-ch_ir)
     trans_sw = np.exp(-ch_sw)
     
     #The trasmittance of the last layer, which is associated withe the 
-    #ground is set to 0, since the ground is considered a black body
-    
+    #ground is set to 0, since the ground is considered a black body    
     trans_ir[nlayer - 1] = 0
     trans_sw[nlayer - 1] = 0
     
     #Computation of the absorbance and the emissivity of the layer 
-    #The emissivity is equal to the absorbance (Kirchhoff's law)
-    
+    #The emissivity is equal to the absorbance (Kirchhoff's law)    
     abs_ir = 1 - trans_ir #absorbance
     abs_sw = 1 - trans_sw 
     
     emis_ir = abs_ir
     emis_sw = abs_sw
     
-    #Computation of the trasmissivity symmetric matrix 
-    
+    #Computation of the trasmissivity symmetric matrix     
     trasm_m_ir = np.ones((nlayer,nlayer))
               
     for i in range(nlayer - 2):
@@ -355,7 +380,4 @@ def main():
     
     T = (sT4/sigma)**0.25
     
-    print(T)
-  
-if __name__ == '__main__':
-    main()
+    return T
