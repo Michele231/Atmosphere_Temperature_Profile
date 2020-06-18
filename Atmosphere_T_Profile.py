@@ -158,6 +158,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                 If the bottom of the cloud is higher than the top
             
                                                                           """
+    #Errors                                                                      
     try:
         if nlayer < 1:
             raise ValueError('The number of the layer must be at least 1')
@@ -174,7 +175,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             raise ValueError("Check clouds parameters!")
             
     except TypeError:
-        raise TypeError("The input must to be a number, not a string!")
+        raise TypeError("The inputs must to be a number, not a string!")
         
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
@@ -273,9 +274,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     ch_sw = ch_abs2 + ch_oz
         
     #CLOUDS contribution to the total OD
-    cloud_position[0] = cloud_position[0]*1000
-    cloud_position[1] = cloud_position[1]*1000
-    
+    cloud_position = np.array(cloud_position)
+    cloud_position = cloud_position*1000
 
     if clouds == 1:
         
@@ -315,6 +315,12 @@ def temperature_profile(nlayer, ch_ir, ch_sw):
     
     if nlayer < 1:
         raise ValueError('The number of the layer must be at least 1')
+        
+    if (len(ch_ir) != nlayer) or (len(ch_sw) != nlayer):
+        raise ValueError('The length of z must to be equal to nlayer!')
+        
+    if (len(ch_sw[ch_sw < 0]) != 0) or (len(ch_ir[ch_ir < 0]) != 0):
+        raise ValueError('ch_ir or ch_sw contain negative elements!')
         
     #Calculation of the comulative optical depth (total OD) in the ir
     #and sw region. Total OD is evaluated as the comulative sum of the OD vectors        
