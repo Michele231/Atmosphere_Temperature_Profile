@@ -3,30 +3,11 @@
 #----------------------------------------
 import numpy as np
 
+#Definition of the fixed value
 
-#Definition of the variables
-
-nlayer = 51 #Number of total layer used for the plane-parallel approximation
-                #The first layer is the surface
-z_top_a = 50 #Height of the atmosphere in kilometers
-scale_height_1 = 5 #Scale height of the first absorber gas
-scale_height_2 = 5 #Scale height of the second absorber gas
-wp_1 = 1 #Mixing ratio flag for gas one. 1 = constant, other = exponential
-wp_2 = 2 #Mixing ratio flag for gas two. 1 = constant, other = exponential
-ozone = 1 #Flag for the stratospheric ozone
 N_gas_1 = 1 #Normalisation factor for the gas one
 N_gas_2 = 1 #Normalisation factor for the gas two
 N_gas_ozone = 1 #Normalisation factor for the ozone
-k_1_a = 0.4 #absorption coefficient for the gas one (IR)
-k_2_a = 0.01 #absorption coefficient for the gas two (SW)
-k_ozone_a = 0.01 #absorption coefficient for the ozone (SW)
-clouds = 0 #flag to consider the presence of the clouds
-cloud_position = [8, 10] #bottom and top height in kilometer
-k_cloud_LW = 0 #Absorption coefficient for the clouds in the long-wave
-k_cloud_SW = 0 #Absorption coefficient for the clouds in the short-wave
-
-#Definition of the fixed value
-
 albedo = 0.3                 #Planetary albedo
 TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
 mudif = 3/5                  # Clouds diffuse trasmittance
@@ -114,7 +95,6 @@ def ozone_mixing_ratio(flag, z, nlayer):
        
 def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                   scale_height_2 = 5, wp_1 = 1, wp_2 = 1, ozone = 0,
-                  N_gas_1 = 1, N_gas_2 = 1, N_gas_ozone = 1,
                   k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0, clouds = 0,
                   cloud_position = [8, 10], k_cloud_LW = 0,
                   k_cloud_SW = 0):
@@ -136,9 +116,6 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             wp_1           : profile flag for the mixing ration of gas 1 (1).
             wp_2           : profile flag for the mixing ration of gas 2 (1).
             ozone          : profile flag for the mixing ration of ozone (0).
-            N_gas_1        : Normalisation factor for the gas 1 (1).
-            N_gas_2        : Normalisation factor for the gas 2 (1).
-            N_gas_ozone    : Normalisation factor for the ozone (1).
             k_1_a          : Absorption coefficient for the gas 1 (IR) (0.4).
             k_2_a          : Absorption coefficient for the gas 2 (SW) (0).
             k_ozone_a      : Absorption coefficient for the ozone (SW) (0).
@@ -174,8 +151,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             cloud_position[1] <0):
             raise ValueError("Check clouds parameters!")
             
+        if cloud_position[1] > z_top_a:
+            raise ValueError("The cloud top is higher than the top of the Atmosphere")
+            
     except TypeError:
-        raise TypeError("The inputs must to be a number, not a string!")
+        raise TypeError("Check the type of the input! They must to be numbers!")
         
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
@@ -280,8 +260,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     if clouds == 1:
         
         #cloud index position (Position index is counted from the top to bottom)
-        bot_index_c = nlayer - int(cloud_position[0]/z_top_a*nlayer)
-        top_index_c = nlayer - int(cloud_position[1]/z_top_a*nlayer)
+        bot_index_c = nlayer - int((cloud_position[0]/z_top_a)*nlayer)
+        top_index_c = nlayer - int((cloud_position[1]/z_top_a)*nlayer)
                 
         for i in range(nlayer - 1):
             
@@ -317,11 +297,14 @@ def temperature_profile(nlayer, ch_ir, ch_sw):
         raise ValueError('The number of the layer must be at least 1')
         
     if (len(ch_ir) != nlayer) or (len(ch_sw) != nlayer):
-        raise ValueError('The length of z must to be equal to nlayer!')
+        raise ValueError('The length of ch_ir and ch_sw must to be equal to nlayer!')
         
     if (len(ch_sw[ch_sw < 0]) != 0) or (len(ch_ir[ch_ir < 0]) != 0):
         raise ValueError('ch_ir or ch_sw contain negative elements!')
-        
+    
+    #nlayer must to be an intereg value
+    nlayer = int(nlayer)
+    
     #Calculation of the comulative optical depth (total OD) in the ir
     #and sw region. Total OD is evaluated as the comulative sum of the OD vectors        
     tot_ch_ir = np.zeros(nlayer)

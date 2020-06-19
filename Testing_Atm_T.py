@@ -1,7 +1,7 @@
 #Testing section of Atm_Temperature functions
 
 import numpy as np
-import Atmosphere_T_Profile as at
+import Atm_T_Functions as at
 import pytest
 from hypothesis.strategies import tuples
 from hypothesis import strategies as st
@@ -67,23 +67,20 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
 
 
 #Test for the function "optical_depth"
-@given(nlayer = st.integers(1,10), z_top_a = st.floats(10,50),
+@given(nlayer = st.integers(1,51), z_top_a = st.floats(20,50),
        scale_height_1 = st.floats(1,5), scale_height_2 = st.floats(1,5),
        wp_1 = st.integers(1,2), wp_2 = st.integers(1,2), ozone = st.integers(0,1),
-       N_gas_1 = st.floats(0,10), N_gas_2 = st.floats(0,10), N_gas_ozone = st.floats(0,10),
        k_1_a = st.floats(0,5), k_2_a = st.floats(0,5), k_ozone_a = st.floats(0,5),
-       clouds = st.integers(0,1), cloud_pos = tuples(st.floats(0,9), st.floats(10,60)),
+       clouds = st.integers(0,1), cloud_pos = tuples(st.floats(0,9), st.floats(10,20)),
        k_cloud_LW = st.floats(0,5), k_cloud_SW = st.floats(0,5))       
 @settings(max_examples = 5)
 def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
-                       wp_2, ozone, N_gas_1, N_gas_2, N_gas_ozone, k_1_a,
-                       k_2_a, k_ozone_a, clouds, cloud_pos,
+                       wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds, cloud_pos,
                        k_cloud_LW, k_cloud_SW):
     
     #ch_ir and ch_sw are the output
     ch_ir, ch_sw = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
-                                    wp_1, wp_2, ozone, N_gas_1, N_gas_2,
-                                    N_gas_ozone, k_1_a, k_2_a, k_ozone_a, clouds,
+                                    wp_1, wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds,
                                     cloud_pos, k_cloud_LW, k_cloud_SW)
     
     #check if the outputs have the correct length
@@ -109,6 +106,10 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
     #check the error for a string input     
     with pytest.raises(TypeError):
         at.optical_depth(nlayer = '1')
+        
+    #check when the top of the cloud is higher than the atmosphere  
+    with pytest.raises(ValueError):
+        at.optical_depth(z_top_a = 10, cloud_position = (8,11))
     
   
 #Test for the function "temperature_profile" 
@@ -132,6 +133,7 @@ def test_temperature_profile(nlayer):
     with pytest.raises(ValueError):
         at.temperature_profile(nlayer, ch_ir - np.ones(nlayer), ch_sw)
     
+
 
 if __name__ == '__main__':
     pass
