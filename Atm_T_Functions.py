@@ -4,7 +4,6 @@
 import numpy as np
 
 #Definition of the fixed value
-
 N_gas_1 = 1 #Normalisation factor for the gas one
 N_gas_2 = 1 #Normalisation factor for the gas two
 N_gas_ozone = 1 #Normalisation factor for the ozone
@@ -12,7 +11,6 @@ albedo = 0.3                 #Planetary albedo
 TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
 mudif = 3/5                  # Clouds diffuse trasmittance
 sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant     
-
 
 
 def mixing_ratio_profile(flag, nlayer, z, scale_height):
@@ -83,7 +81,7 @@ def ozone_mixing_ratio(flag, z, nlayer):
         def condition(x): return (x > z_botton) & (x < z_top)
         lay = np.where(condition(z))[0] #pos index height where there's ozone
         z0 = (z_botton + z_top)*0.5     #height maximum concentration
-        sigma = (z_top - z_botton)/10   
+        sigma = (z_top - z_botton)/6   
         w_ozone = np.zeros(nlayer)
         for k in lay:
             w_ozone[k]=np.exp((-(z[k]-z0)**2)/(2*sigma**2))
@@ -133,7 +131,10 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             ValueError:
                 If the one of the input value is negative
                 If nlayer < 1
-                If the bottom of the cloud is higher than the top
+                If the bottom of the cloud is higher than the top or if the
+                top of the cloud is higher than the top of the atmosphere
+            TypeError:
+                If the input value is not a number (ex: input string)
             
                                                                           """
     #Errors                                                                      
@@ -327,10 +328,8 @@ def temperature_profile(nlayer, ch_ir, ch_sw):
     #Computation of the absorbance and the emissivity of the layer 
     #The emissivity is equal to the absorbance (Kirchhoff's law)    
     abs_ir = 1 - trans_ir #absorbance
-    abs_sw = 1 - trans_sw 
-    
-    emis_ir = abs_ir
-    emis_sw = abs_sw
+    abs_sw = 1 - trans_sw     
+    emis_ir = abs_ir      #emissivity
     
     #Computation of the trasmissivity symmetric matrix     
     trasm_m_ir = np.ones((nlayer,nlayer))
