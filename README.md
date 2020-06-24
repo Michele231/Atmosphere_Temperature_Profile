@@ -15,6 +15,12 @@ Density and pressure decrease nearly exponentially with the height:
 
 ![Pressure profile](https://latex.codecogs.com/gif.latex?p%20%3D%20p_%7B0%7De%5E%7B-z/H%7D)
 
+<div class="math">
+\begin{equation}
+e^{x}
+\end{equation}
+</div>
+
 ### Long-term radiative energy balance of a planet.
 
 The system is assumed to be in a stationary state with energy transfer occurring only by means of radiation. 
