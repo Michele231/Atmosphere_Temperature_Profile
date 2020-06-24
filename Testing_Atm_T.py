@@ -79,21 +79,29 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
                        k_cloud_LW, k_cloud_SW):
     
     #ch_ir and ch_sw are the output
-    ch_ir, ch_sw = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
+    ch_ir, ch_sw, z = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
                                     wp_1, wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds,
                                     cloud_pos, k_cloud_LW, k_cloud_SW)
     
     #check if the outputs have the correct length
-    assert(len(ch_ir) == len(ch_ir) == nlayer)
-    
-    #check that if all the absorption coefficent are zero, the outputs must to
-    #be two zeros vectors    
-    assert(np.count_nonzero(at.optical_depth(k_1_a = 0, k_2_a = 0, k_ozone_a = 0,
-                                             k_cloud_LW = 0, k_cloud_SW = 0)) == 0)
-    
+    assert(len(ch_ir) == len(ch_ir) == len(z) == nlayer)
+        
     #check that outputs do not contain negative elements
     assert(len(ch_ir[ch_ir < 0]) == 0)
     assert(len(ch_sw[ch_sw < 0]) == 0)
+    
+    #check that the last element of z is zero and the first z_top_a
+    assert(z[nlayer-1] == 0)
+    #if nlayer = 1 we are considering only the surface
+    if nlayer != 1:
+        assert(z[0] == z_top_a*1000)
+        
+    #check that if all the absorption coefficents are zero, the outputs must to
+    #be two zeros vectors
+    ch_ir, ch_sw, z = at.optical_depth(k_1_a = 0, k_2_a = 0, k_ozone_a = 0,
+                                       k_cloud_LW = 0, k_cloud_SW = 0)
+    assert(np.count_nonzero(ch_ir) == 0)
+    assert(np.count_nonzero(ch_sw) == 0)
     
     #check that when the bottom of the cloud is => of the top an error arise
     with pytest.raises(ValueError):
@@ -102,18 +110,18 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
     #check the error for a negative input     
     with pytest.raises(ValueError):
         at.optical_depth(k_2_a = -1)
+                
+    #check when the top of the cloud is higher than the atmosphere  
+    with pytest.raises(ValueError):
+        at.optical_depth(z_top_a = 10, cloud_position = (8,11))
         
     #check the error for a string input     
     with pytest.raises(TypeError):
         at.optical_depth(nlayer = '1')
-        
-    #check when the top of the cloud is higher than the atmosphere  
-    with pytest.raises(ValueError):
-        at.optical_depth(z_top_a = 10, cloud_position = (8,11))
     
   
 #Test for the function "temperature_profile" 
-@given(nlayer = st.integers(1, 25))
+@given(nlayer = st.integers(1, 51))
 @settings(max_examples = 5)
 def test_temperature_profile(nlayer):
     
@@ -137,3 +145,4 @@ def test_temperature_profile(nlayer):
 
 if __name__ == '__main__':
     pass
+

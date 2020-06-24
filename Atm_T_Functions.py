@@ -127,6 +127,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         OUTPUT:
             ch_ir : Total optical vector depth in the IR region.
             ch_sw : Total optical vector depth in the SW region.
+            z     : Height vectors in meters
         
         RAISE:
             ValueError:
@@ -185,7 +186,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         
         #definition of the mean height level and height level vector                                            
         dz[nlayer-1]=0
-        #Creations of the height vector
+        #Creations of the height vector z and mean height vector zm
         z = np.zeros(nlayer)
         zm = np.zeros(nlayer)
         for i in range(nlayer-1):
@@ -275,7 +276,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             elif i < top_index_c:
                 continue
     
-    return ch_ir, ch_sw
+    return ch_ir, ch_sw, z
 
         
 def temperature_profile(nlayer, ch_ir, ch_sw):
