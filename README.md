@@ -10,11 +10,10 @@ the radiation that passes through it, giving rise to a wide range of optical eff
 ### The Vertical Structure
 ![alt text](https://github.com/Michele231/Esame_Software/blob/master/Figure/Atm_TEmperature_Profile.png "Atmosphere mean temperature profile")
 
-The density at the sea level is  1.25 $kg m^{-3}$. Density and pressure decrease nearly exponentially with the height:
+The density at the sea level is  1.25 ![](http://www.sciweavers.org/upload/Tex2Img_1593036352/render.png). 
+Density and pressure decrease nearly exponentially with the height:
 
-$p = p_{0}e^{-z/H}$
-
-
+![Pressure profile](https://latex.codecogs.com/gif.latex?p%20%3D%20p_%7B0%7De%5E%7B-z/H%7D)
 
 ### Long-term radiative energy balance of a planet.
 
