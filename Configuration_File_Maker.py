@@ -19,11 +19,11 @@ config['General_Variables'] = {
     'abs_coefficient_ozone' : '0.000005'}
 
 config['Clouds_Variables'] = {    
-    'presence_of_clouds' : '0',
+    'presence_of_clouds' : '1',
     'cloud_bottom' : '8',
     'cloud_top' : '10',
-    'cloud_IR_abs_coeff' : '0',
-    'cloud_SW_abs_coeff' : '0'}
+    'cloud_IR_abs_coeff' : '0.0001',
+    'cloud_SW_abs_coeff' : '0.0001'}
 
 config['Output_Path'] = {
     'output_path_graph' : './OUTPUT/'}
