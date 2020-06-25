@@ -13,13 +13,27 @@ the radiation that passes through it, giving rise to a wide range of optical eff
 The density at the sea level is  1.25 ![](http://www.sciweavers.org/upload/Tex2Img_1593036352/render.png). 
 Density and pressure decrease nearly exponentially with the height:
 
-![Pressure profile](https://latex.codecogs.com/gif.latex?p%20%3D%20p_%7B0%7De%5E%7B-z/H%7D)
+![Pressure profile](http://www.sciweavers.org/upload/Tex2Img_1593076798/render.png)
 
-<div class="math">
-\begin{equation}
-e^{x}
-\end{equation}
-</div>
+where H is refered to as the scale height, which ranges, in the lowest 100km, roughly from 7 to 8km. Since the variation along the z direction
+is much larger tham the correspondig horizontal and time variations, it is usefull to define a ***standard atmosphere*** wich represents the 
+horizontally and temporally averaged structure of the atmosphere.
+
+The atmosphere is composed of a mixture of gasses:
+
+
+| Costituent     | Fractional Concentration         V/V |
+|----------------|--------------------------------------|
+| Nitrogen       |                78.08%                |
+| Oxigen         |                20.95%                |
+| Argon          |                 0.93%                |
+| Water Vapor    |                 0-5%                 |
+| Carbon Dioxide |                400ppm                |
+| Methane        |                1.75ppm               |
+| Nitrous Oxide  |                0.3ppm                |
+| Ozone          |               0-0.1ppm               |
+
+Most of the atmosphere concentration
 
 ### Long-term radiative energy balance of a planet.
 
