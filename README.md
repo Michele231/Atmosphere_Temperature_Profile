@@ -13,7 +13,7 @@ the radiation that passes through it, giving rise to a wide range of optical eff
 The density at the sea level is  1.25 ![](http://www.sciweavers.org/upload/Tex2Img_1593036352/render.png). 
 Density and pressure decrease nearly exponentially with the height:
 
-![Pressure profile](http://www.sciweavers.org/upload/Tex2Img_1593076798/render.png)
+![Pressure profile](https://latex.codecogs.com/gif.latex?p%20%3D%20p_0%5E%7B-z/H%7D)
 
 where H is refered to as the scale height, which ranges, in the lowest 100km, roughly from 7 to 8km. Since the variation along the z direction
 is much larger tham the correspondig horizontal and time variations, it is usefull to define a ***standard atmosphere*** wich represents the 
@@ -33,9 +33,23 @@ The atmosphere is composed of a mixture of gasses:
 | Nitrous Oxide  |                0.3ppm                |
 | Ozone          |               0-0.1ppm               |
 
-Most of the atmosphere concentration
+The ***concentration*** (or the mixing ratio if I considering the masses) of the of Nitrogen, Oxigen, Argon, and Carbon Dioxide tend 
+to be quite uniform and indipendent from height due to the turbolent mixing. Gasses like water has a very high variability, and generally 
+for this type of gasses the concentration profile tends to be exponential decreasing.
 
-### Long-term radiative energy balance of a planet.
+The vertical profile of the temperature for the typical condition, as shown in the figure above, provides a basis for dividing the atmosphere
+into four layer:
+
+* ***Troposhere***: marked by a generally decreasing temperatures with height.
+
+* ***Stratosphere***: where the vertical mixing is strongly inhibited by the increasing temperature with the height (due to the ozone layer).
+
+* ***Mesosphere***: characterized by a decrease in temperature with the altitude.
+
+* ***Thermosphere***: where there is an increasing in temperature due to the absorption of the solar radiation by the oxigen and nitrogen.
+
+## Atm_T_Profile Model
+
 
 The system is assumed to be in a stationary state with energy transfer occurring only by means of radiation. 
 Each layer is in radiative energy balance. The equations that describe the energy balance for each layer have this simple structure:
