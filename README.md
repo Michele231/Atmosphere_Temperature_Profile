@@ -6,8 +6,8 @@ The Earth's atmosphere is relatively trasparent to incoming solar radiation (sho
 emitted by the Earth's surface and by the atmosphere itself. For this reason part of the outgoing radiation is blocked. Populary this phenomena 
 is known as ***greenhouse effect***.
 
-Much of the absorption and reemission of outgoing radiation are due to air molecules, but cloud droplets and aerosol. The atmosphere also scatters
-the radiation that passes through it, giving rise to a wide range of optical effects, including the blue color of the sky.
+Much of the absorption and reemission of outgoing radiation are due to air molecules, but also cloud droplets and aerosol. More than this the atmosphere
+scatters the radiation that passes through it, giving rise to a wide range of optical effects, including the blue color of the sky.
 
 ### The Vertical Structure
 ![alt text](https://github.com/Michele231/Esame_Software/blob/master/Figure/Atm_TEmperature_Profile.png "Atmosphere mean temperature profile")
@@ -17,8 +17,8 @@ Density and pressure decrease nearly exponentially with the height:
 
 ![Pressure profile](https://latex.codecogs.com/gif.latex?p%20%3D%20p_0%5E%7B-z/H%7D)
 
-where H is refered to as the scale height, which ranges, in the lowest 100km, roughly from 7 to 8km. Since the variation along the z direction
-is much larger tham the correspondig horizontal and time variations, it is usefull to define a ***standard atmosphere*** wich represents the 
+where H is refered to as the scale height (or scale parameter), which ranges, in the lowest 100km, roughly from 7 to 8km. Since the variation along the z direction
+is much larger than the correspondig horizontal and time variations, it is usefull to define a ***standard atmosphere*** wich represents the 
 horizontally and temporally averaged structure of the atmosphere.
 
 The atmosphere is composed of a mixture of gasses:
@@ -59,7 +59,7 @@ outputs are the optical depth in two channel (short-wave and infrared) and the t
 
 The system is assumed to be in a stationary state with energy transfer occurring only by means of radiation. The atmosphere is divided into
 n parallel layers. Each layer is in radiative energy balance, meaning that all the energy that is absorbed by the layer is also emitted by 
-it like a grey body at the temperature T with an emissivity coefficient equal to the absorption coefficient (Kirchhoff's law of 
+it like a grey body at the temperature T with an emission coefficient equal to the absorption coefficient (Kirchhoff's law of 
 thermal radiation).
 
 The equations that describe the energy balance for each layer have this simple structure:
@@ -120,11 +120,11 @@ The parameters that you can modify are:
 The last layer is associated with the surface. 
 
 * ***top_of_atmopshere***: It rappresents the height of the atmosphere. Since the model embodies the Kirchhoff law, which is valid only if is possible to
-consider a local thermodynamic equilibrium situation, it is suggested not to exceed 50 km in height.
+consider a local thermodynamic equilibrium situation, it is suggested not to exceed 50 km in height [km].
 
-* ***scale_height_gas_ir***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the IR channel.
+* ***scale_height_gas_ir***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the IR channel [km].
 
-* ***scale_height_gas_sw***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the SW channel.
+* ***scale_height_gas_sw***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the SW channel [km].
 
 * ***wp_profile_gas_ir***: Flag for the type of mixing ratio profile of the gasses in the IR channel. If equal to 1 the mixing ratio profile will be 
 constant with the height (exaple: CO2). Otherwise the profile will be exponential (exaple: H2O)
@@ -146,9 +146,9 @@ the cross section of the gas or changing its concentration
 
 * ***presence_of_clouds***: Flag for the presence of clouds. If equal to 1 clouds is considered, otherwise not.
 
-* ***cloud_bottom***: Bottom level of the clouds.
+* ***cloud_bottom***: Bottom level of the clouds [km].
 
-* ***cloud_top***: Top level of the clouds.
+* ***cloud_top***: Top level of the clouds [km].
 
 * ***cloud_ir_abs_coeff***: Absorption coefficient for the clouds in the IR channel.
 
@@ -165,13 +165,20 @@ in order to set the atmosphere parameters, then use (For the Windows user):
 ```
 python Atm_T_Profile.py
 ```
+or (For Linux user):
+```
+python3 Atm_T_Profile.py
+```
+
 The outputs will be found in the output path choosen in the configuration file. The outputs file will be:
 
-* ***Temperature_Profile.txt***: It contains the temperature value as function of the height.
+* ***Temperature_Profile.txt***: It contains the temperature value as function of the height (the last layer, Height = 0, is the temperature of the surface).
 
 * ***Temperature_Profile.png***: It contains the temperature chart as function of the height.
 
 * ***OD_Profile.png***: It contains the optical depth chart in function of the height for the two channel (Short-wave and IR).
+
+In the case the number of layer selected is one (nlayer=1), the only output will be Temperature_Profile.txt.
 
 #### Example: increase the concentration of greenhouse gases
 

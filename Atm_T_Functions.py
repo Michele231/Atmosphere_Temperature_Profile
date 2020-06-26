@@ -40,6 +40,9 @@ def mixing_ratio_profile(flag, nlayer, z, scale_height):
     if len(z) != nlayer:
         raise ValueError('The length of z must to be equal to nlayer!')
     
+    if scale_height <= 0:
+        raise ValueError('The scale_height must to be greater than 0!')
+    
     nlayer = int(nlayer)
     
     if flag == 1:
@@ -143,10 +146,10 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             raise ValueError('The number of the layer must be at least 1')
         
         if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
-            raise ValueError("z_top_a, scale_height_1 and scale_height_2 must to be > 0")
+            raise ValueError("z_top_a, scale_height_IR and scale_height_SW must to be > 0")
         
-        if (N_gas_1 <0 or N_gas_2 <0 or N_gas_ozone <0 or k_1_a <0 or k_2_a <0 or
-             k_ozone_a <0 or k_cloud_LW <0 or k_cloud_SW <0):
+        if (k_1_a <0 or k_2_a <0 or k_ozone_a <0 or k_cloud_LW <0 or 
+            k_cloud_SW <0):
             raise ValueError("All the input must to be positive!")
             
         if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or

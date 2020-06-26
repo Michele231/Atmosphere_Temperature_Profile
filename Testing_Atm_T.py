@@ -26,12 +26,11 @@ def test_mixing_ratio_profile(flag, nlayer, z_top_a, scale_height):
     assert(len(at.mixing_ratio_profile(flag, nlayer, z, 
                                        scale_height)) == nlayer)
     
-    #check if a ValueError arise if nlay is smaller than 1
     with pytest.raises(ValueError):
+        #check if a ValueError arise if nlay is smaller than 1
         at.mixing_ratio_profile(1,0,np.array([1]),1)
         
-    #check if ValueError arise if the length of z is different from nlayer
-    with pytest.raises(ValueError):
+        #check if ValueError arise if the length of z is different from nlayer
         at.mixing_ratio_profile(1,2,np.array([1]),1)  
     
 #Test for the function "mixing_ratio_profile"    
@@ -57,12 +56,11 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
     if z_top_a < 20:
         assert(np.count_nonzero(at.ozone_mixing_ratio(flag, z, nlayer)) == 0)
     
-    #check if a ValueError arise if nlay is smaller than 1
     with pytest.raises(ValueError):
+        #check if a ValueError arise if nlay is smaller than 1
         at.ozone_mixing_ratio(1,np.array([1]),0)        
 
-    #check if ValueError arise if the length of z is different from nlayer
-    with pytest.raises(ValueError):
+        #check if ValueError arise if the length of z is different from nlayer
         at.ozone_mixing_ratio(1,np.array([1]),2)         
 
 
@@ -103,16 +101,14 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
     assert(np.count_nonzero(ch_ir) == 0)
     assert(np.count_nonzero(ch_sw) == 0)
     
-    #check that when the bottom of the cloud is => of the top an error arise
     with pytest.raises(ValueError):
+        #check that when the bottom of the cloud is => of the top an error arise
         at.optical_depth(cloud_position = (5,4))
 
-    #check the error for a negative input     
-    with pytest.raises(ValueError):
+        #check the error for a negative input     
         at.optical_depth(k_2_a = -1)
                 
-    #check when the top of the cloud is higher than the atmosphere  
-    with pytest.raises(ValueError):
+        #check when the top of the cloud is higher than the atmosphere  
         at.optical_depth(z_top_a = 10, cloud_position = (8,11))
         
     #check the error for a string input     
@@ -121,7 +117,7 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
     
   
 #Test for the function "temperature_profile" 
-@given(nlayer = st.integers(1, 51))
+@given(nlayer = st.integers(1,51))
 @settings(max_examples = 5)
 def test_temperature_profile(nlayer):
     
