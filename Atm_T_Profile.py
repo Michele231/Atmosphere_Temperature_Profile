@@ -2,11 +2,11 @@
 #Atmosphere Temperature Profile
 #-----------------------------------------------------------------
 #
-#This program ....
-#
-#
-#
-#....
+# Atm_T_Profile is a simple model for the solution of the radiative transfert 
+# problem (without scattering).
+# For a given atmosphere, the model outputs are the optical depth in two
+# channel (short-wave and infrared) and the temperature profile of the 
+# atmosphere and the surface.
 #
 #
 #

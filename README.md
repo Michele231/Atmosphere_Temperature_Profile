@@ -52,7 +52,7 @@ into four layer:
 
 ## Getting Started: Atm_T_Profile Model
 
-###Overview
+### Overview
 
 Atm_T_Profile is a simple model for the solution of the radiative transfert problem (without scattering). For a given atmosphere, the model
 outputs are the optical depth in two channel (short-wave and infrared) and the temperature profile of the atmosphere and the surface.
@@ -83,7 +83,7 @@ temperature of the layer n-th and sigma is the Stefan–Boltzmann constant.
 Knowing the absorptivity (from the gasses profile) it is possible to build a system of n equations (one for each layer) 
 and n unknown variables, i. e. the theta temperatures of each layer. Solving it produces the result of interest.
 
-###Installation 
+### Installation 
 
 In order to install the model clone the repository [Esame_Software](https://github.com/Michele231/Esame_Software):
 ```
@@ -91,36 +91,36 @@ git clone https://github.com/Michele231/Esame_Software
 cd Esame_Software
 ```
 
-###Parameters of the Model
+### Parameters of the Model
 
 Inside the repository there is the following files:
 
-*[Figure](https://github.com/Michele231/Esame_Software/tree/master/Figure) where are stored the figure for the README.md file.
+* [Figure](https://github.com/Michele231/Esame_Software/tree/master/Figure) where are stored the figure for the README.md file.
 
-*[OUTPUT](https://github.com/Michele231/Esame_Software/tree/master/OUTPUT) that is the default folder of the output of the model.
+* [OUTPUT](https://github.com/Michele231/Esame_Software/tree/master/OUTPUT) that is the default folder of the output of the model.
 
-*[Atm_T_Functions.py](https://github.com/Michele231/Esame_Software/blob/master/Atm_T_Functions.py) contains the functions used in the model.
+* [Atm_T_Functions.py](https://github.com/Michele231/Esame_Software/blob/master/Atm_T_Functions.py) contains the functions used in the model.
 
-*[Atm_T_Profile.py](https://github.com/Michele231/Esame_Software/blob/master/Atm_T_Profile.py) is the model that you want to run.
+* [Atm_T_Profile.py](https://github.com/Michele231/Esame_Software/blob/master/Atm_T_Profile.py) is the model that you want to run.
 
-*[Atmosphere_T_Configuration.ini](https://github.com/Michele231/Esame_Software/blob/master/Atmosphere_T_Configuration.ini) is the configuration
+* [Atmosphere_T_Configuration.ini](https://github.com/Michele231/Esame_Software/blob/master/Atmosphere_T_Configuration.ini) is the configuration
 file where you can modify the parameters describing the atmosphere.
 
-*[Configuration_File_Maker.py](https://github.com/Michele231/Esame_Software/blob/master/Configuration_File_Maker.py) is the code used to generate
+* [Configuration_File_Maker.py](https://github.com/Michele231/Esame_Software/blob/master/Configuration_File_Maker.py) is the code used to generate
 the Atmosphere_T_Configuration.ini file.
 
-*[Testing_Atm_T.py](https://github.com/Michele231/Esame_Software/blob/master/Testing_Atm_T.py) contains the testing fot the Atm_T_Functions.py.
+* [Testing_Atm_T.py](https://github.com/Michele231/Esame_Software/blob/master/Testing_Atm_T.py) contains the testing fot the Atm_T_Functions.py.
 
 The model allows you to build an atmosphere by going to specify several parameters that describe it (within the configuration file).
 The parameters that you can modify are:
 
-####General Variable
+#### General Variable
 
 * ***number_of_layers***: It is the number of layers into which the atmosphere is divided. It has to be greater than zero (Hint: put at least 51 layers).
 The last layer is associated with the surface. 
 
 * ***top_of_atmopshere***: It rappresents the height of the atmosphere. Since the model embodies the Kirchhoff law, which is valid only if is possible to
-consider an local thermodynamic equilibrium situation, it is suggested not to exceed 50 km in height.
+consider a local thermodynamic equilibrium situation, it is suggested not to exceed 50 km in height.
 
 * ***scale_height_gas_ir***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the IR channel.
 
@@ -142,7 +142,7 @@ the cross section of the gas or changing its concentration
 
 * ***abs_coefficient_ozone***: Absorption coefficient for the gasses in the ozone.
 
-####Clouds_Variables
+#### Clouds_Variables
 
 * ***presence_of_clouds***: Flag for the presence of clouds. If equal to 1 clouds is considered, otherwise not.
 
@@ -154,11 +154,11 @@ the cross section of the gas or changing its concentration
 
 * ***cloud_sw_abs_coeff***: Absorption coefficient for the clouds in the SW channel.
 
-####Output_Path
+#### Output_Path
 
 * ***output_path_graph***: Path for the outputs. The outputs of this program will be a the temperature and OD profile for the atmosphere.
 
-###Usage and Examples
+### Usage and Examples
 
 If you want to run the model, first use the file [Atmosphere_T_Configuration.ini](https://github.com/Michele231/Esame_Software/blob/master/Atmosphere_T_Configuration.ini)
 in order to set the atmosphere parameters, then use (For the Windows user):
@@ -182,7 +182,9 @@ In the first case in figure ***wp_profile_gas_ir*** has been setted to 0.8, in t
 ![Temperature profile changing with the increasing of the gasses concentrations](https://github.com/Michele231/Esame_Software/blob/master/Figure/p50_unite.PNG)
 
 
+Author: Michele Martinazzo
 
+e-mail : michele.martinazzo@studio.unibo.it
 
 
 
