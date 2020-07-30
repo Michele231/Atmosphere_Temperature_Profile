@@ -23,18 +23,16 @@ def test_mixing_ratio_profile(flag, nlayer, z_top_a, scale_height):
             z[i] = z_top_a - dzs*i
     
     #check if the output length is the correct
-    assert(len(at.mixing_ratio_profile(flag, nlayer, z, 
+    assert(len(at.mixing_ratio_profile(flag, z, 
                                        scale_height)) == nlayer)
     
     with pytest.raises(ValueError):
-        #check if a ValueError arise if nlay is smaller than 1
-        at.mixing_ratio_profile(1,0,np.array([1]),1)
         
-        #check if ValueError arise if the length of z is different from nlayer
-        at.mixing_ratio_profile(1,2,np.array([1]),1)  
+        #check if ValueError arise if the scale_height is negative
+        at.mixing_ratio_profile(1,np.array([1]),-1)  
     
 #Test for the function "mixing_ratio_profile"    
-@given(st.integers(1,2), st.integers(1,10), st.floats(10,50))
+@given(st.integers(0,1), st.integers(1,10), st.floats(10,50))
 @settings(max_examples = 5)
 def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
     
@@ -49,19 +47,17 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
     #trasform the km in meters
     z = z*1000
     #check if the output length is the correct
-    assert(len(at.ozone_mixing_ratio(flag, z, nlayer)) == nlayer)
+    assert(len(at.ozone_mixing_ratio(flag, z)) == nlayer)
     
     #check that if the atmosphere height is lower than 20km the ozone vector
     #profile should contain only zeros
     if z_top_a < 20:
-        assert(np.count_nonzero(at.ozone_mixing_ratio(flag, z, nlayer)) == 0)
+        assert(np.count_nonzero(at.ozone_mixing_ratio(flag, z)) == 0)
     
     with pytest.raises(ValueError):
-        #check if a ValueError arise if nlay is smaller than 1
-        at.ozone_mixing_ratio(1,np.array([1]),0)        
-
-        #check if ValueError arise if the length of z is different from nlayer
-        at.ozone_mixing_ratio(1,np.array([1]),2)         
+        
+        #check that if the flag is different from 0 or 1 a ValueError arrises
+        at.ozone_mixing_ratio(3,np.array([1]))         
 
 
 #Test for the function "optical_depth"
@@ -125,7 +121,7 @@ def test_temperature_profile(nlayer):
     ch_ir = np.random.rand(nlayer)
     ch_sw = np.random.rand(nlayer)
     
-    T = at.temperature_profile(nlayer, ch_ir, ch_sw)
+    T = at.temperature_profile(ch_ir, ch_sw)
     
     #check if the output length is the correct
     assert(len(T) == nlayer)
@@ -133,9 +129,13 @@ def test_temperature_profile(nlayer):
     #check that outputs do not contain negative elements
     assert(len(T[T < 0]) == 0)
     
-    #check that when there is a negative element on the input an error arise
+    
     with pytest.raises(ValueError):
-        at.temperature_profile(nlayer, ch_ir - np.ones(nlayer), ch_sw)
+        #check that when there is a negative element on the input an error arise
+        at.temperature_profile(ch_ir - np.ones(nlayer), ch_sw)
+        
+        #check that when ch_ir and ch_sw have differen len. a ValueError arises
+        at.temperature_profile(np.array([1,2]), np.array([1]))
     
 
 

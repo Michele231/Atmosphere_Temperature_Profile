@@ -4,16 +4,13 @@
 import numpy as np
 
 #Definition of the fixed value
-N_gas_1 = 1 #Normalisation factor for the gas one
-N_gas_2 = 1 #Normalisation factor for the gas two
-N_gas_ozone = 1 #Normalisation factor for the ozone
 albedo = 0.3                 #Planetary albedo
 TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
 mudif = 3/5                  # Clouds diffuse trasmittance
 sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant     
 
 
-def mixing_ratio_profile(flag, nlayer, z, scale_height):
+def mixing_ratio_profile(flag, z, scale_height):
     """ This function generates the mixing ratio profile w of the gas.
         The mixing ratio is defined as the fraction of the gas over the
         total mass.
@@ -26,7 +23,6 @@ def mixing_ratio_profile(flag, nlayer, z, scale_height):
             flag         : profile type, if equal to 1 the function returns a 
                            constant profile, if other it return a exponential 
                            profile
-            nlayer       : number of ayer of the atmosphere
             z            : height vector
             scale_height : scale height H for the exp profile exp(-z/H)
             
@@ -34,16 +30,12 @@ def mixing_ratio_profile(flag, nlayer, z, scale_height):
             w : mixing ratio profile vector
     
                                                                        """
-    if nlayer < 1:
-        raise ValueError('The number of the layer must be at least 1')
-        
-    if len(z) != nlayer:
-        raise ValueError('The length of z must to be equal to nlayer!')
-    
+
     if scale_height <= 0:
         raise ValueError('The scale_height must to be greater than 0!')
     
-    nlayer = int(nlayer)
+    #Definition of the number of layer
+    nlayer = len(z)
     
     if flag == 1:
         w = np.zeros(nlayer)
@@ -54,7 +46,7 @@ def mixing_ratio_profile(flag, nlayer, z, scale_height):
     return w
 
 
-def ozone_mixing_ratio(flag, z, nlayer):
+def ozone_mixing_ratio(flag, z):
     """ This function generates the mixing ratio profile for the ozone.
        
         The mixing ration will be gaussian shaped, 
@@ -64,19 +56,14 @@ def ozone_mixing_ratio(flag, z, nlayer):
             flag   : profile type, if equal to 1 the function return a 
                      gaussian profile
             z      : height vector
-            nlayer : number of ayer of the atmosphere
             
         OUTPUT:
             w_ozone : mixing ratio profile vector       
     
                                                                       """
-    if nlayer < 1:
-        raise ValueError('The number of the layer must be at least 1')
     
-    if len(z) != nlayer:
-        raise ValueError('The length of z must to be equal to nlayer!')
-    
-    nlayer = int(nlayer)
+    #Definition of the number of layer    
+    nlayer = len(z)
                                                                     
     if flag == 1:
         z_botton = 20000 #minimum level of stratospheric ozone
@@ -88,8 +75,10 @@ def ozone_mixing_ratio(flag, z, nlayer):
         w_ozone = np.zeros(nlayer)
         for k in lay:
             w_ozone[k]=np.exp((-(z[k]-z0)**2)/(2*sigma**2))
-    else:
+    elif flag == 0:
         w_ozone = np.zeros(nlayer)
+    else:
+        raise ValueError('The flag for the ozone must to be 1 (on) or 0 (off)')
             
     return w_ozone
 
@@ -161,6 +150,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             
     except TypeError:
         raise TypeError("Check the type of the input! They must to be numbers!")
+    
+    #Definition of local costant
+    N_gas_1 = 1 #Normalisation factor for the gas one
+    N_gas_2 = 1 #Normalisation factor for the gas two
+    N_gas_ozone = 1 #Normalisation factor for the ozone
         
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
@@ -204,13 +198,13 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     
     
     # Mixing ratio shape gas 1 (IR)
-    w1 = mixing_ratio_profile(wp_1, nlayer, z, scale_height_1)
+    w1 = mixing_ratio_profile(wp_1, z, scale_height_1)
     
     # Mixing ratio shape gas 2 (SW)
-    w2 = mixing_ratio_profile(wp_2, nlayer, z, scale_height_2)
+    w2 = mixing_ratio_profile(wp_2, z, scale_height_2)
     
     #Flag for the ozone
-    w_ozone = ozone_mixing_ratio(ozone, z, nlayer)
+    w_ozone = ozone_mixing_ratio(ozone, z)
 
     #Absorption gasses profile vector (Density_profile*Mixing_ratio_shape)
     #This gives the quantity of absorption gasses in that layer
@@ -283,12 +277,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     return ch_ir, ch_sw, z
 
         
-def temperature_profile(nlayer, ch_ir, ch_sw):
+def temperature_profile(ch_ir, ch_sw):
     """This function computes the atmospheric temperature vector in an
        equilibrium situation.
        
        INPUT:
-           nlayer : number of ayer of the atmosphere.
            ch_ir  : Total optical vector depth in the IR region.
            ch_sw  : Total optical vector depth in the SW region.
            
@@ -297,18 +290,15 @@ def temperature_profile(nlayer, ch_ir, ch_sw):
                level of the atmosphere.
 
                                                                         """
-    
-    if nlayer < 1:
-        raise ValueError('The number of the layer must be at least 1')
-        
-    if (len(ch_ir) != nlayer) or (len(ch_sw) != nlayer):
-        raise ValueError('The length of ch_ir and ch_sw must to be equal to nlayer!')
+            
+    if (len(ch_ir) != len(ch_sw)):
+        raise ValueError('The length of ch_ir and ch_sw must to be equal!')
         
     if (len(ch_sw[ch_sw < 0]) != 0) or (len(ch_ir[ch_ir < 0]) != 0):
         raise ValueError('ch_ir or ch_sw contain negative elements!')
     
     #nlayer must to be an intereg value
-    nlayer = int(nlayer)
+    nlayer = len(ch_ir)
     
     #Calculation of the comulative optical depth (total OD) in the ir
     #and sw region. Total OD is evaluated as the comulative sum of the OD vectors        
