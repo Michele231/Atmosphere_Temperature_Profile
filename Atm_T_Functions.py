@@ -84,7 +84,34 @@ def ozone_mixing_ratio(flag, z):
             
     return w_ozone
 
-       
+
+def gasses_optical_depth(dz, k, density_abs):
+    """ This function computes the OD profile due to the gasses.
+        It return the OD using the Lambert-Beer law.
+        
+        INPUT:
+            dz           : vector containin the thickness of the layers.
+            k            : absorption coefficient of the gasses.
+            density_abs  : vector containing the density profile of the absorber.
+        
+        OUTPUT:
+            ch           : optical depth profile vector.
+
+                                                                       """
+    #Calculation of the oprical depth                                                                   
+    nlayer = len(k)                                                                   
+    ch = np.zeros(nlayer)                                                                   
+    
+    #The calculation of the OD profile take the mean value of the layer
+    #so it has been taken the average value between the two layers                                                                   
+    for i in range(nlayer-1):
+        ch[i] = dz[i]*0.5*(k[i]*density_abs[i] +
+                           k[i+1]*density_abs[i+1])/mudif                                                                  
+                                                                                                                                              
+    return ch
+
+
+    
 def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                   scale_height_2 = 5, wp_1 = 'costant', wp_2 = 'costant', ozone = 0,
                   k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0, clouds = 0,
@@ -105,8 +132,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                              for the gas assorbing in the long wave (5).
             scale_height_2 : (gas 2) scale height H for the exp profile exp(-z/H)
                              for the gas assorbing in the short wave gas 2 (5).
-            wp_1           : profile for the mixing ration of gas 1 (1).
-            wp_2           : profile for the mixing ration of gas 2 (1).
+            wp_1           : profile for the mixing ration of gas 1 ('costant').
+            wp_2           : profile for the mixing ration of gas 2 ('costant').
             ozone          : flag for the mixing ration of ozone (0).
             k_1_a          : Absorption coefficient for the gas 1 (IR) (0.4).
             k_2_a          : Absorption coefficient for the gas 2 (SW) (0).
@@ -132,26 +159,24 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             
                                                                           """
     #Errors                                                                      
-    try:
-        if nlayer < 1:
-            raise ValueError('The number of the layer must be at least 1')
+
+    if nlayer < 1:
+        raise ValueError('The number of the layer must be at least 1')
         
-        if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
-            raise ValueError("z_top_a, scale_height_IR and scale_height_SW must to be > 0")
+    if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
+        raise ValueError("z_top_a, scale_height_IR and scale_height_SW must to be > 0")
         
-        if (k_1_a <0 or k_2_a <0 or k_ozone_a <0 or k_cloud_LW <0 or 
-            k_cloud_SW <0):
-            raise ValueError("All the input must to be positive!")
+    if (k_1_a <0 or k_2_a <0 or k_ozone_a <0 or k_cloud_LW <0 or 
+        k_cloud_SW <0):
+        raise ValueError("All the input must to be positive!")
             
-        if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
-            cloud_position[1] <0):
-            raise ValueError("Check clouds parameters!")
+    if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
+        cloud_position[1] <0):
+        raise ValueError("Check clouds parameters!")
             
-        if cloud_position[1] > z_top_a:
-            raise ValueError("The cloud top is higher than the top of the Atmosphere")
+    if cloud_position[1] > z_top_a:
+        raise ValueError("The cloud top is higher than the top of the Atmosphere")
             
-    except TypeError:
-        raise TypeError("Check the type of the input! They must to be numbers!")
     
     #Definition of local costant
     N_gas_1 = 1 #Normalisation factor for the gas one
@@ -188,10 +213,9 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         dz[nlayer-1]=0
         #Creations of the height vector z and mean height vector zm
         z = np.zeros(nlayer)
-        zm = np.zeros(nlayer)
         for i in range(nlayer-1):
             z[i] = z_top_a - dzs*i  
-            zm[i] = z_top_a - dzs*(0.5 + i)
+
 
     #Atmospheric Density Profile Calculation    
     do = 1.225                   #Air density at the grond [Kg/m^3]
@@ -201,10 +225,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     
     # Mixing ratio shape gas 1 (IR)
     w1 = mixing_ratio_profile(wp_1, z, scale_height_1)
-    
     # Mixing ratio shape gas 2 (SW)
     w2 = mixing_ratio_profile(wp_2, z, scale_height_2)
-    
     #Flag for the ozone
     w_ozone = ozone_mixing_ratio(ozone, z)
 
@@ -236,21 +258,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     #ch_ir = Optical depth (OD) for the IR region (gas 1) 
     #ch_abs2 = OD from the 2° absorber gas (SW)
     #ch_oz = OD for the SW region due to ozone (SW)
-    
-    ch_ir = np.zeros(nlayer)
-    ch_abs2 = np.zeros(nlayer)
-    ch_oz = np.zeros(nlayer)
-    
-    #The calculation of the OD profile take the mean value of the layer
-    #so it has been taken the average value between the two layers
-    for i in range(nlayer-1):
-        ch_ir[i] = dz[i]*0.5*(k1[i]*density_abs1[i] +
-                              k1[i+1]*density_abs1[i+1])/mudif
-        ch_abs2[i] = dz[i]*0.5*(k2[i]*density_abs2[i] +
-                              k2[i+1]*density_abs2[i+1])/mudif
-        ch_oz[i] = dz[i]*0.5*(k_ozone[i]*density_ozone[i] +
-                              k_ozone[i+1]*density_ozone[i+1])/mudif
-    
+        
+    ch_ir = gasses_optical_depth(dz, k1, density_abs1)
+    ch_abs2 = gasses_optical_depth(dz, k2, density_abs2)
+    ch_oz = gasses_optical_depth(dz, k_ozone, density_ozone)
+        
     #total OD in the SW region
     ch_sw = ch_abs2 + ch_oz
         
@@ -275,6 +287,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                                 
             elif i < top_index_c:
                 continue
+    elif clouds == 0:
+        pass
+    else:
+        raise ValueError("clouds flag must to be 0 (off) or 1(on)!")
+    
     
     return ch_ir, ch_sw, z
 

@@ -35,6 +35,7 @@ def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
  
         #check if ValueError arise if the profile input is wrong
         at.mixing_ratio_profile('costan',np.array([1]),-1) 
+
     
 #Test for the function "mixing_ratio_profile"    
 @given(st.integers(0,1), st.integers(1,10), st.floats(10,50))
@@ -63,6 +64,24 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
         
         #check that if the flag is different from 0 or 1 a ValueError arrises
         at.ozone_mixing_ratio(3,np.array([1]))         
+
+
+
+#Test for the function "gasses_optical_depth"
+@given(st.integers(0,50))
+@settings(max_examples = 5)
+def test_gasses_optical_depth(nlayer):
+    
+    #definition of 3 random POSIVIVE vector to simulate dz, k, density_abs
+    dz = np.random.rand(nlayer)
+    k = np.random.rand(nlayer)
+    density_abs = np.random.rand(nlayer)
+    
+    ch = at.gasses_optical_depth(dz, k, density_abs)
+    
+    
+    assert(len(ch[ch < 0]) == 0)
+
 
 
 #Test for the function "optical_depth"
@@ -111,11 +130,9 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
                 
         #check when the top of the cloud is higher than the atmosphere  
         at.optical_depth(z_top_a = 10, cloud_position = (8,11))
-        
-    #check the error for a string input     
-    with pytest.raises(TypeError):
-        at.optical_depth(nlayer = '1')
-    
+
+        #check when cloud != 0 and 1 
+        at.optical_depth(clouds = 3)
   
 #Test for the function "temperature_profile" 
 @given(nlayer = st.integers(1,51))
