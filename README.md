@@ -126,11 +126,11 @@ consider a local thermodynamic equilibrium situation, it is suggested not to exc
 
 * ***scale_height_gas_sw***: It is the scale parameter for the exponential mixing ratio profile for the gasses in the SW channel [km].
 
-* ***wp_profile_gas_ir***: Flag for the type of mixing ratio profile of the gasses in the IR channel. If equal to 1 the mixing ratio profile will be 
-constant with the height (exaple: CO2). Otherwise the profile will be exponential (exaple: H2O)
+* ***wp_profile_gas_ir***: Flag for the type of mixing ratio profile of the gasses in the IR channel. If equal to "costant" the mixing ratio profile will be 
+constant with the height (exaple: CO2). If equal to "exponential" the profile will be exponential (exaple: H2O)
 
-* ***wp_profile_gas_sw***: Flag for the type of mixing ratio profile of the gasses in the SW channel. If equal to 1 the mixing ratio profile will be 
-constant with the height. Otherwise the profile will be exponential
+* ***wp_profile_gas_sw***: Flag for the type of mixing ratio profile of the gasses in the SW channel. If equal to "costant" the mixing ratio profile will be 
+constant with the height. If equal to "exponential" the profile will be exponential
 
 * ***presence_of_ozone***: Flag for the presence of the ozone layer. If equal to 1 the ozone is considered, otherwise not.
 

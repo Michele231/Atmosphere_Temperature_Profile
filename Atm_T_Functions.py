@@ -10,7 +10,7 @@ mudif = 3/5                  # Clouds diffuse trasmittance
 sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant     
 
 
-def mixing_ratio_profile(flag, z, scale_height):
+def mixing_ratio_profile(profile, z, scale_height):
     """ This function generates the mixing ratio profile w of the gas.
         The mixing ratio is defined as the fraction of the gas over the
         total mass.
@@ -20,9 +20,9 @@ def mixing_ratio_profile(flag, z, scale_height):
             2) exponential mixing ratio
     
         INPUT:
-            flag         : profile type, if equal to 1 the function returns a 
-                           constant profile, if other it return a exponential 
-                           profile
+            profile      : profile type, if equal to 'costant' the function 
+                           returns a constant profile, if equal to 'exponential'
+                           it return an exponential profile
             z            : height vector
             scale_height : scale height H for the exp profile exp(-z/H)
             
@@ -37,11 +37,13 @@ def mixing_ratio_profile(flag, z, scale_height):
     #Definition of the number of layer
     nlayer = len(z)
     
-    if flag == 1:
+    if profile == 'costant':
         w = np.zeros(nlayer)
         w = np.full_like(w, 1)         #constant mix.ratio (example: CO2)
-    else:
+    elif profile == 'exponential':
         w = np.exp(-z/scale_height)   #exponential mix.ratio (example: H2O)
+    else:
+        raise ValueError('The profile flag must to be [costant] or [exponential]')
         
     return w
 
@@ -84,7 +86,7 @@ def ozone_mixing_ratio(flag, z):
 
        
 def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
-                  scale_height_2 = 5, wp_1 = 1, wp_2 = 1, ozone = 0,
+                  scale_height_2 = 5, wp_1 = 'costant', wp_2 = 'costant', ozone = 0,
                   k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0, clouds = 0,
                   cloud_position = [8, 10], k_cloud_LW = 0,
                   k_cloud_SW = 0):
@@ -103,9 +105,9 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                              for the gas assorbing in the long wave (5).
             scale_height_2 : (gas 2) scale height H for the exp profile exp(-z/H)
                              for the gas assorbing in the short wave gas 2 (5).
-            wp_1           : profile flag for the mixing ration of gas 1 (1).
-            wp_2           : profile flag for the mixing ration of gas 2 (1).
-            ozone          : profile flag for the mixing ration of ozone (0).
+            wp_1           : profile for the mixing ration of gas 1 (1).
+            wp_2           : profile for the mixing ration of gas 2 (1).
+            ozone          : flag for the mixing ration of ozone (0).
             k_1_a          : Absorption coefficient for the gas 1 (IR) (0.4).
             k_2_a          : Absorption coefficient for the gas 2 (SW) (0).
             k_ozone_a      : Absorption coefficient for the ozone (SW) (0).

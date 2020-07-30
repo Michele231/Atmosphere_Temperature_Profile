@@ -9,10 +9,12 @@ from hypothesis import settings
 from hypothesis import given
 
 #Test for the function "mixing_ratio_profile"
-@given(st.integers(1,2), st.integers(1,10), st.floats(1,10),
+types = ['costant','exponential'] #definition of the two types of profile used
+
+@given(st.integers(0,1), st.integers(1,10), st.floats(1,10),
        st.floats(1,10))
 @settings(max_examples = 5)
-def test_mixing_ratio_profile(flag, nlayer, z_top_a, scale_height):
+def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
     
     #Defining a z vector associates with nlayer and z_top_a (atmosphere top height)
     #This vector contains the heights of each layer       
@@ -23,13 +25,16 @@ def test_mixing_ratio_profile(flag, nlayer, z_top_a, scale_height):
             z[i] = z_top_a - dzs*i
     
     #check if the output length is the correct
-    assert(len(at.mixing_ratio_profile(flag, z, 
+    assert(len(at.mixing_ratio_profile(types[profile], z, 
                                        scale_height)) == nlayer)
     
     with pytest.raises(ValueError):
         
         #check if ValueError arise if the scale_height is negative
-        at.mixing_ratio_profile(1,np.array([1]),-1)  
+        at.mixing_ratio_profile('costant',np.array([1]),-1)  
+ 
+        #check if ValueError arise if the profile input is wrong
+        at.mixing_ratio_profile('costan',np.array([1]),-1) 
     
 #Test for the function "mixing_ratio_profile"    
 @given(st.integers(0,1), st.integers(1,10), st.floats(10,50))
@@ -63,7 +68,7 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
 #Test for the function "optical_depth"
 @given(nlayer = st.integers(1,51), z_top_a = st.floats(20,50),
        scale_height_1 = st.floats(1,5), scale_height_2 = st.floats(1,5),
-       wp_1 = st.integers(1,2), wp_2 = st.integers(1,2), ozone = st.integers(0,1),
+       wp_1 = st.integers(0,1), wp_2 = st.integers(0,1), ozone = st.integers(0,1),
        k_1_a = st.floats(0,5), k_2_a = st.floats(0,5), k_ozone_a = st.floats(0,5),
        clouds = st.integers(0,1), cloud_pos = tuples(st.floats(0,9), st.floats(10,20)),
        k_cloud_LW = st.floats(0,5), k_cloud_SW = st.floats(0,5))       
@@ -74,8 +79,8 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
     
     #ch_ir and ch_sw are the output
     ch_ir, ch_sw, z = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
-                                    wp_1, wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds,
-                                    cloud_pos, k_cloud_LW, k_cloud_SW)
+                                    types[wp_1], types[wp_2], ozone, k_1_a, k_2_a, 
+                                    k_ozone_a, clouds, cloud_pos, k_cloud_LW, k_cloud_SW)
     
     #check if the outputs have the correct length
     assert(len(ch_ir) == len(ch_ir) == len(z) == nlayer)

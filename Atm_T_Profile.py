@@ -35,10 +35,10 @@ scale_height_1 = parser.getfloat('General_Variables', 'scale_height_gas_IR',
                                  fallback = 10)
 scale_height_2 = parser.getfloat('General_Variables', 'scale_height_gas_SW',
                                  fallback = 5)
-wp_1 = parser.getfloat('General_Variables', 'wp_profile_gas_IR',
-                       fallback = 2)
-wp_2 = parser.getfloat('General_Variables', 'wp_profile_gas_SW',
-                       fallback = 1)
+wp_1 = parser.get('General_Variables', 'wp_profile_gas_IR',
+                       fallback = 'exponential')
+wp_2 = parser.get('General_Variables', 'wp_profile_gas_SW',
+                       fallback = 'costant')
 ozone = parser.getfloat('General_Variables', 'presence_of_ozone',
                         fallback = 1)
 k_1_a = parser.getfloat('General_Variables', 'abs_coefficient_gas_IR',
@@ -66,7 +66,7 @@ ch_ir, ch_sw, z = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height
                              cloud_position, k_cloud_LW, k_cloud_SW)
 
 #generation of the temperature profile vector from the OD 
-T = at.temperature_profile(nlayer, ch_ir, ch_sw)
+T = at.temperature_profile(ch_ir, ch_sw)
 
 #Definition of the output Path
 output_path = parser.get('Output_Path', 'output_path_graph',
