@@ -11,22 +11,28 @@ from hypothesis import given
 #Test for the function "mixing_ratio_profile"
 types = ['costant','exponential'] #definition of the two types of profile used
 
-@given(st.integers(0,1), st.integers(1,10), st.floats(1,10),
+@given(st.integers(0,1), st.integers(1,50), st.floats(15,50),
        st.floats(1,10))
 @settings(max_examples = 5)
 def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
     
     #Defining a z vector associates with nlayer and z_top_a (atmosphere top height)
-    #This vector contains the heights of each layer       
-    z = np.zeros(nlayer)
-    if nlayer > 1:
-        dzs = z_top_a/(nlayer-1)
-        for i in range(nlayer-1):
-            z[i] = z_top_a - dzs*i
+    #z obtained from optical_depth function. xxx and yyy are useless parameter.      
+    xxx, yyy, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
+    
+    w = at.mixing_ratio_profile(types[profile], z, scale_height)
     
     #check if the output length is the correct
-    assert(len(at.mixing_ratio_profile(types[profile], z, 
-                                       scale_height)) == nlayer)
+    assert(len(w) == nlayer)
+    
+    #check that w does not contain negative value
+    assert(len(w[w < 0]) == 0)
+    
+    #check that the profile reproduce the correct behavior
+    if types[profile] == 'costant':
+        assert(w[0] == w[nlayer - 1])
+    elif types[profile] == 'exponential':
+        assert(w[0] <= w[nlayer - 1])
     
     with pytest.raises(ValueError):
         
@@ -38,22 +44,21 @@ def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
 
     
 #Test for the function "mixing_ratio_profile"    
-@given(st.integers(0,1), st.integers(1,10), st.floats(10,50))
+@given(st.integers(0,1), st.integers(1,50), st.floats(15,50))
 @settings(max_examples = 5)
 def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
     
     #Defining a z vector associates with nlayer and z_top_a (atmosphere top height)
-    #This vector contains the heights of each layer       
-    z = np.zeros(nlayer)
-    if nlayer > 1:
-        dzs = z_top_a/(nlayer-1)
-        for i in range(nlayer-1):
-            z[i] = z_top_a - dzs*i
+    #z obtained from optical_depth function. xxx and yyy are useless parameter.     
+    xxx, yyy, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
     
-    #trasform the km in meters
-    z = z*1000
+    w_ozone = at.ozone_mixing_ratio(flag, z)
+    
     #check if the output length is the correct
-    assert(len(at.ozone_mixing_ratio(flag, z)) == nlayer)
+    assert(len(w_ozone) == nlayer)
+    
+    #check that w_ozone does not contain negative value
+    assert(len(w_ozone[w_ozone < 0]) == 0)
     
     #check that if the atmosphere height is lower than 20km the ozone vector
     #profile should contain only zeros
@@ -73,15 +78,17 @@ def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
 def test_gasses_optical_depth(nlayer):
     
     #definition of 3 random POSIVIVE vector to simulate dz, k, density_abs
+    np.random.seed(30)
     dz = np.random.rand(nlayer)
     k = np.random.rand(nlayer)
     density_abs = np.random.rand(nlayer)
     
     ch = at.gasses_optical_depth(dz, k, density_abs)
     
-    
+    #check that ch does not contain negative value
     assert(len(ch[ch < 0]) == 0)
-
+    #check that ch is nlayer length 
+    assert(len(ch) == nlayer)
 
 
 #Test for the function "optical_depth"
@@ -140,6 +147,7 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
 def test_temperature_profile(nlayer):
     
     #definition of two random positive vectors of length = nlayer
+    np.random.seed(30)
     ch_ir = np.random.rand(nlayer)
     ch_sw = np.random.rand(nlayer)
     

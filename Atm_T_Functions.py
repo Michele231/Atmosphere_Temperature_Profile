@@ -55,8 +55,7 @@ def ozone_mixing_ratio(flag, z):
         centered at 35 km of height.
         
         INPUT:
-            flag   : profile type, if equal to 1 the function return a 
-                     gaussian profile
+            flag   : flag to consider the presence of ozone. 1 == on, 0 == off.
             z      : height vector
             
         OUTPUT:
@@ -154,12 +153,9 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                 If nlayer < 1
                 If the bottom of the cloud is higher than the top or if the
                 top of the cloud is higher than the top of the atmosphere
-            TypeError:
-                If the input value is not a number (ex: input string)
             
                                                                           """
     #Errors                                                                      
-
     if nlayer < 1:
         raise ValueError('The number of the layer must be at least 1')
         
@@ -177,11 +173,6 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     if cloud_position[1] > z_top_a:
         raise ValueError("The cloud top is higher than the top of the Atmosphere")
             
-    
-    #Definition of local costant
-    N_gas_1 = 1 #Normalisation factor for the gas one
-    N_gas_2 = 1 #Normalisation factor for the gas two
-    N_gas_ozone = 1 #Normalisation factor for the ozone
         
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
@@ -193,12 +184,9 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     scale_height_1 = scale_height_1*1000                   
     scale_height_2 = scale_height_2*1000 
     
-    k1 = np.zeros(nlayer)
-    k2 = np.zeros(nlayer)
-    k_ozone = np.zeros(nlayer)
-    k1 = np.full_like(k1,k_1_a)
-    k2 = np.full_like(k2,k_2_a)
-    k_ozone = np.full_like(k_ozone,k_ozone_a)
+    k1 = np.full_like(np.zeros(nlayer),k_1_a)
+    k2 = np.full_like(np.zeros(nlayer),k_2_a)
+    k_ozone = np.full_like(np.zeros(nlayer),k_ozone_a)
     
     #Definition of the geometry of the single layer.    
     if nlayer==1:           #The last layer is the surface                
@@ -211,11 +199,11 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         
         #definition of the mean height level and height level vector                                            
         dz[nlayer-1]=0
-        #Creations of the height vector z and mean height vector zm
+        #Creations of the height vector z
         z = np.zeros(nlayer)
         for i in range(nlayer-1):
-            z[i] = z_top_a - dzs*i  
-
+            z[i] = z_top_a - dzs*i
+        z[nlayer-1] = 0
 
     #Atmospheric Density Profile Calculation    
     do = 1.225                   #Air density at the grond [Kg/m^3]
@@ -245,14 +233,14 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         density_abs1 = 0          
         density_abs2 = 0
     else:           
-        density_abs1 = density_abs1*N_gas_1/tot_a1         #Normalized abs 1
-        density_abs2 = density_abs2*N_gas_2/tot_a2         #Normalized abs 2
+        density_abs1 = density_abs1/tot_a1         #Normalized abs 1
+        density_abs2 = density_abs2/tot_a2         #Normalized abs 2
     
     #check if there is enough space for the ozone
     if tot_ozone == 0:
         density_ozone = np.zeros(nlayer)
     else:
-        density_ozone = density_ozone*N_gas_ozone/tot_ozone   #Normalized ozone
+        density_ozone = density_ozone/tot_ozone   #Normalized ozone
 
     #Calculation of the oprical depth
     #ch_ir = Optical depth (OD) for the IR region (gas 1) 
