@@ -17,8 +17,8 @@ types = ['costant','exponential'] #definition of the two types of profile used
 def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
     
     #Defining a z vector associates with nlayer and z_top_a (atmosphere top height)
-    #z obtained from optical_depth function. xxx and yyy are useless parameter.      
-    xxx, yyy, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
+    #z obtained from optical_depth function.  _ is used for useless parameter.      
+    _, _, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
     
     w = at.mixing_ratio_profile(types[profile], z, scale_height)
     
@@ -49,8 +49,8 @@ def test_mixing_ratio_profile(profile, nlayer, z_top_a, scale_height):
 def test_ozone_mixing_ratio(flag, nlayer, z_top_a):
     
     #Defining a z vector associates with nlayer and z_top_a (atmosphere top height)
-    #z obtained from optical_depth function. xxx and yyy are useless parameter.     
-    xxx, yyy, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
+    #z obtained from optical_depth function. _ is used for useless parameter.     
+    _, _, z = at.optical_depth(nlayer = nlayer, z_top_a = z_top_a)
     
     w_ozone = at.ozone_mixing_ratio(flag, z)
     
@@ -95,18 +95,15 @@ def test_gasses_optical_depth(nlayer):
 @given(nlayer = st.integers(1,51), z_top_a = st.floats(20,50),
        scale_height_1 = st.floats(1,5), scale_height_2 = st.floats(1,5),
        wp_1 = st.integers(0,1), wp_2 = st.integers(0,1), ozone = st.integers(0,1),
-       k_1_a = st.floats(0,5), k_2_a = st.floats(0,5), k_ozone_a = st.floats(0,5),
-       clouds = st.integers(0,1), cloud_pos = tuples(st.floats(0,9), st.floats(10,20)),
-       k_cloud_LW = st.floats(0,5), k_cloud_SW = st.floats(0,5))       
+       k_1_a = st.floats(0,5), k_2_a = st.floats(0,5), k_ozone_a = st.floats(0,5))       
 @settings(max_examples = 5)
 def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
-                       wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds, cloud_pos,
-                       k_cloud_LW, k_cloud_SW):
+                       wp_2, ozone, k_1_a, k_2_a, k_ozone_a):
     
     #ch_ir and ch_sw are the output
     ch_ir, ch_sw, z = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
                                     types[wp_1], types[wp_2], ozone, k_1_a, k_2_a, 
-                                    k_ozone_a, clouds, cloud_pos, k_cloud_LW, k_cloud_SW)
+                                    k_ozone_a)
     
     #check if the outputs have the correct length
     assert(len(ch_ir) == len(ch_ir) == len(z) == nlayer)
@@ -123,24 +120,42 @@ def test_optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2, wp_1,
         
     #check that if all the absorption coefficents are zero, the outputs must to
     #be two zeros vectors
-    ch_ir, ch_sw, z = at.optical_depth(k_1_a = 0, k_2_a = 0, k_ozone_a = 0,
-                                       k_cloud_LW = 0, k_cloud_SW = 0)
+    ch_ir, ch_sw, z = at.optical_depth(k_1_a = 0, k_2_a = 0, k_ozone_a = 0)
     assert(np.count_nonzero(ch_ir) == 0)
     assert(np.count_nonzero(ch_sw) == 0)
     
     with pytest.raises(ValueError):
-        #check that when the bottom of the cloud is => of the top an error arise
-        at.optical_depth(cloud_position = (5,4))
-
         #check the error for a negative input     
         at.optical_depth(k_2_a = -1)
                 
+
+
+#Test for the function "clouds_optical_depth"
+@given(z_top_a = st.floats(21,51), cloud_position = tuples(st.floats(0,9), st.floats(10,20)),
+       k_cloud_LW = st.floats(0,1), k_cloud_SW = st.floats(0,1))
+@settings(max_examples = 5)
+def test_clouds_optical_depth(z_top_a, cloud_position, k_cloud_LW, k_cloud_SW):
+    
+    ch_ir_c, ch_sw_c = at.clouds_optical_depth(z_top_a = z_top_a,
+                                            cloud_position = cloud_position,
+                                            k_cloud_LW = k_cloud_LW,
+                                            k_cloud_SW = k_cloud_SW)
+    
+    #check that the clouds increase the total OD. (the starting ch_ir/sw are zeros)
+    assert(sum(ch_ir_c) >= 0)
+    assert(sum(ch_sw_c) >= 0)
+    #check that outputs do not contain negative elements
+    assert(len(ch_ir_c[ch_ir_c < 0]) == 0)
+    assert(len(ch_sw_c[ch_sw_c < 0]) == 0)
+    
+    with pytest.raises(ValueError):
+    #check that when the bottom of the cloud is => of the top an error arise
+        at.clouds_optical_depth(cloud_position = (5,4))
         #check when the top of the cloud is higher than the atmosphere  
         at.optical_depth(z_top_a = 10, cloud_position = (8,11))
-
-        #check when cloud != 0 and 1 
-        at.optical_depth(clouds = 3)
-  
+        
+        
+        
 #Test for the function "temperature_profile" 
 @given(nlayer = st.integers(1,51))
 @settings(max_examples = 5)

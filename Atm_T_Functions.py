@@ -113,9 +113,7 @@ def gasses_optical_depth(dz, k, density_abs):
     
 def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
                   scale_height_2 = 5, wp_1 = 'costant', wp_2 = 'costant', ozone = 0,
-                  k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0, clouds = 0,
-                  cloud_position = [8, 10], k_cloud_LW = 0,
-                  k_cloud_SW = 0):
+                  k_1_a = 0.4, k_2_a = 0, k_ozone_a = 0):
     """ This function returns the optical depth (OD) vectors in the
         long wave (IR) and short wave (SW) regions.
         
@@ -137,10 +135,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             k_1_a          : Absorption coefficient for the gas 1 (IR) (0.4).
             k_2_a          : Absorption coefficient for the gas 2 (SW) (0).
             k_ozone_a      : Absorption coefficient for the ozone (SW) (0).
-            clouds         : Flag to consider the presence of the clouds (0).
-            cloud_position : Bottom and top height in kilometer ([8, 10]).
-            k_cloud_LW     : Absorption coefficient for the clouds in the IR.
-            k_cloud_SW     : Absorption coefficient for the clouds in the SW.
+
             
         OUTPUT:
             ch_ir : Total optical vector depth in the IR region.
@@ -151,8 +146,7 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
             ValueError:
                 If the one of the input value is negative
                 If nlayer < 1
-                If the bottom of the cloud is higher than the top or if the
-                top of the cloud is higher than the top of the atmosphere
+
             
                                                                           """
     #Errors                                                                      
@@ -162,18 +156,10 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
     if (z_top_a <=0 or scale_height_1 <=0 or scale_height_2 <=0):
         raise ValueError("z_top_a, scale_height_IR and scale_height_SW must to be > 0")
         
-    if (k_1_a <0 or k_2_a <0 or k_ozone_a <0 or k_cloud_LW <0 or 
-        k_cloud_SW <0):
+    if (k_1_a <0 or k_2_a <0 or k_ozone_a <0):
         raise ValueError("All the input must to be positive!")
             
-    if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
-        cloud_position[1] <0):
-        raise ValueError("Check clouds parameters!")
-            
-    if cloud_position[1] > z_top_a:
-        raise ValueError("The cloud top is higher than the top of the Atmosphere")
-            
-        
+                    
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
            
@@ -253,44 +239,83 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         
     #total OD in the SW region
     ch_sw = ch_abs2 + ch_oz
-        
-    #CLOUDS contribution to the total OD
-    cloud_position = np.array(cloud_position)
-    cloud_position = cloud_position*1000
 
-    if clouds == 1:
-        
-        #cloud index position (Position index is counted from the top to bottom)
-        bot_index_c = nlayer - int((cloud_position[0]/z_top_a)*nlayer)
-        top_index_c = nlayer - int((cloud_position[1]/z_top_a)*nlayer)
-                
-        for i in range(nlayer - 1):
-            
-            if i > bot_index_c:
-                continue
-
-            elif i <= bot_index_c and i >= top_index_c:
-                ch_ir[i] = ch_ir[i] + k_cloud_LW*dz[i]/mudif
-                ch_sw[i] = ch_sw[i] + k_cloud_SW*dz[i]/mudif
-                                
-            elif i < top_index_c:
-                continue
-    elif clouds == 0:
-        pass
-    else:
-        raise ValueError("clouds flag must to be 0 (off) or 1(on)!")
-    
-    
     return ch_ir, ch_sw, z
 
+def clouds_optical_depth(ch_ir = np.zeros(51), ch_sw = np.zeros(51), z_top_a = 50, 
+                         cloud_position = [8, 10], k_cloud_LW = 0.001,
+                         k_cloud_SW = 0):
+    """ This function computes the OD contribute of the clouds.
+    It return the OD using the Lambert-Beer law, summing it to the
+    gasses contribute.
+        
+    INPUT:
+        ch_ir           : vector containin the thickness of the layers.
+        ch_sw           : absorption coefficient of the gasses.
+        z_top_a         : Height of the atmosphere in kilometers.
+        cloud_position  : touples with the position of the cloud.
+        k_cloud_LW      : Absorption coefficient for the clouds in the IR.
+        k_cloud_SW      : Absorption coefficient for the clouds in the SW.
+        
+        
+    OUTPUT:
+        ch_ir_c           : OD profile vector with clouds contribute in the IR.
+        ch_sw_c           : OD profile vector with clouds contribute in the SW.
+    
+    RAISE:
+        ValueError:
+                Incorrect position of the clouds.
+
+                                                                       """
+    #check for clouds position errors.
+    if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
+        cloud_position[1] <0):
+        raise ValueError("Check clouds parameters!")
+            
+    if cloud_position[1] > z_top_a:
+        raise ValueError("The cloud top is higher than the top of the Atmosphere")
+    
+    nlayer = len(ch_ir)
+    
+    # deifinition of dz
+    if nlayer==1:           #The last layer is the surface                
+        raise ValueError("Can't put clouds with only one layer!!")
+    else:
+        dzs = (z_top_a)/(nlayer-1)     #Layer thickness 
+        dz = np.full_like(np.zeros(nlayer), dzs)  #Layer thickness Vector 
+    
+    
+    #CLOUDS contribution to the total OD
+    cloud_position = np.array(cloud_position)
+                                                               
+    #cloud index position (Position index is counted from the top to bottom)
+    bot_index_c = (nlayer - 1) - int((cloud_position[0]/z_top_a)*(nlayer - 1))
+    top_index_c = (nlayer - 1) - int((cloud_position[1]/z_top_a)*(nlayer - 1))
+                
+    for i in range(nlayer - 1):
+            
+        if i > bot_index_c:
+            continue
+
+        elif i <= bot_index_c and i >= top_index_c:
+            ch_ir[i] = ch_ir[i] + k_cloud_LW*dz[i]/mudif
+            ch_sw[i] = ch_sw[i] + k_cloud_SW*dz[i]/mudif
+                                
+        elif i < top_index_c:
+            continue
+        
+        ch_ir_c = ch_ir                                                              
+        ch_sw_c = ch_sw 
+                                                                                                                                     
+    return ch_ir_c, ch_sw_c
         
 def temperature_profile(ch_ir, ch_sw):
     """This function computes the atmospheric temperature vector in an
        equilibrium situation.
        
        INPUT:
-           ch_ir  : Total optical vector depth in the IR region.
-           ch_sw  : Total optical vector depth in the SW region.
+           ch_ir  : Total optical depth vector in the IR region.
+           ch_sw  : Total optical depth vector in the SW region.
            
        OUTPUT:
            T : Atmospheric temperature vector, gives the temperature at each

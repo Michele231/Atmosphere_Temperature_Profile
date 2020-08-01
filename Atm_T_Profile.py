@@ -62,8 +62,17 @@ cloud_position = np.array([cloud_bottom, cloud_top])
 
 #generation of the optical depth starting from the data
 ch_ir, ch_sw, z = at.optical_depth(nlayer, z_top_a, scale_height_1, scale_height_2,
-                             wp_1, wp_2, ozone, k_1_a, k_2_a, k_ozone_a, clouds,
-                             cloud_position, k_cloud_LW, k_cloud_SW)
+                             wp_1, wp_2, ozone, k_1_a, k_2_a, k_ozone_a)
+
+#if the cloud flag is equal to one it sum the cloud's contruìibute to OD
+if clouds == 1:
+    ch_ir, ch_sw = at.clouds_optical_depth(ch_ir, ch_sw, z_top_a, cloud_position,
+                                    k_cloud_LW, k_cloud_SW)
+elif clouds == 0:
+    pass
+else:
+    raise ValueError("clouds flag must to be 0 (off) or 1(on)!")
+
 
 #generation of the temperature profile vector from the OD 
 T = at.temperature_profile(ch_ir, ch_sw)
