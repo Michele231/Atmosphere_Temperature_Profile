@@ -138,8 +138,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
 
             
         OUTPUT:
-            ch_ir : Total optical vector depth in the IR region.
-            ch_sw : Total optical vector depth in the SW region.
+            ch_ir : Total optical depth vector in the IR region.
+            ch_sw : Total optical depth vector in the SW region.
             z     : Height vectors in meters
         
         RAISE:
@@ -158,8 +158,8 @@ def optical_depth(nlayer = 51, z_top_a = 50, scale_height_1 = 5,
         
     if (k_1_a <0 or k_2_a <0 or k_ozone_a <0):
         raise ValueError("All the input must to be positive!")
-            
-                    
+    
+                             
     #nlayer must to be an intereg value
     nlayer = int(nlayer)
            
@@ -250,8 +250,8 @@ def clouds_optical_depth(ch_ir = np.zeros(51), ch_sw = np.zeros(51), z_top_a = 5
     gasses contribute.
         
     INPUT:
-        ch_ir           : vector containin the thickness of the layers.
-        ch_sw           : absorption coefficient of the gasses.
+        ch_ir           : Total optical depth vector in the IR region.
+        ch_sw           : Total optical depth vector in the SW region.
         z_top_a         : Height of the atmosphere in kilometers.
         cloud_position  : touples with the position of the cloud.
         k_cloud_LW      : Absorption coefficient for the clouds in the IR.
@@ -274,6 +274,9 @@ def clouds_optical_depth(ch_ir = np.zeros(51), ch_sw = np.zeros(51), z_top_a = 5
             
     if cloud_position[1] > z_top_a:
         raise ValueError("The cloud top is higher than the top of the Atmosphere")
+        
+    if (k_cloud_LW < 0 or k_cloud_SW < 0):
+        raise ValueError("k_cloud_LW and k_cloud_SW must to be >= 0!")
     
     nlayer = len(ch_ir)
     
@@ -291,7 +294,8 @@ def clouds_optical_depth(ch_ir = np.zeros(51), ch_sw = np.zeros(51), z_top_a = 5
     #cloud index position (Position index is counted from the top to bottom)
     bot_index_c = (nlayer - 1) - int((cloud_position[0]/z_top_a)*(nlayer - 1))
     top_index_c = (nlayer - 1) - int((cloud_position[1]/z_top_a)*(nlayer - 1))
-                
+    
+    # since the process is lineal, to consider the clouds we can sum their contribution            
     for i in range(nlayer - 1):
             
         if i > bot_index_c:
