@@ -3,13 +3,7 @@
 #----------------------------------------
 import numpy as np
 
-#Definition of the fixed value
-albedo = 0.3                 #Planetary albedo
-TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
-mudif = 3/5                  # Clouds diffuse trasmittance
-sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant     
-
-
+    
 def mixing_ratio_profile(profile, z, scale_height):
     """ This function generates the mixing ratio profile w of the gas.
         The mixing ratio is defined as the fraction of the gas over the
@@ -97,6 +91,10 @@ def gasses_optical_depth(dz, k, density_abs):
             ch           : optical depth profile vector.
 
                                                                        """
+    #Definition of the fixed value
+
+    mudif = 3/5                  # Clouds diffuse trasmittance 
+    
     #Calculation of the oprical depth                                                                   
     nlayer = len(k)                                                                   
     ch = np.zeros(nlayer)                                                                   
@@ -267,6 +265,9 @@ def clouds_optical_depth(ch_ir = np.zeros(51), ch_sw = np.zeros(51), z_top_a = 5
                 Incorrect position of the clouds.
 
                                                                        """
+    #Definition of the fixed value
+    mudif = 3/5                  # Clouds diffuse trasmittance
+   
     #check for clouds position errors.
     if (cloud_position[0] >= cloud_position[1] or cloud_position[0] <0 or
         cloud_position[1] <0):
@@ -332,6 +333,11 @@ def temperature_profile(ch_ir, ch_sw):
         
     if (len(ch_sw[ch_sw < 0]) != 0) or (len(ch_ir[ch_ir < 0]) != 0):
         raise ValueError('ch_ir or ch_sw contain negative elements!')
+        
+    #Definition of the fixed value
+    albedo = 0.3                 #Planetary albedo
+    TSI = (1 - albedo) * 1370/4  #Total solar irradiance at the atmosphere top
+    sigma = 5.6704e-8            # [W/(m^2k^4)] Stefan Boltzmann Costant   
     
     #nlayer must to be an intereg value
     nlayer = len(ch_ir)
